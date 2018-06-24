@@ -101,13 +101,23 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AGButton.h" />
+    <ClInclude Include="AGComboBox.h" />
+    <ClInclude Include="AGEdit.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="FileIO.h" />
     <ClInclude Include="RandomNumTools-Windows.h" />
     <ClInclude Include="RandomNumTools-WindowsDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utilc.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AGButton.cpp" />
+    <ClCompile Include="AGComboBox.cpp" />
+    <ClCompile Include="AGEdit.cpp" />
+    <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="RandomNumTools-Windows.cpp" />
     <ClCompile Include="RandomNumTools-WindowsDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -123,9 +133,17 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\FirstLogin.bmp" />
+    <Image Include="res\IDB_BTNCLOSE.bmp" />
+    <Image Include="res\IDB_BTNMIN.bmp" />
     <Image Include="res\RandomNumTools-Windows.ico" />
+    <Image Include="res\Start.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="RandomNumTools-Windows.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

@@ -9,6 +9,7 @@
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
 #endif
 
+#define _CRT_SECURE_NO_WARNINGS
 #include "targetver.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
@@ -33,13 +34,17 @@
 
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars
 
+#include <iostream>
+using namespace std;
 
+#include "FileIO.h"
+using namespace CPlusBaluoteli;
+extern CFileIO gLogRandom;
+extern CConfig gConfig;
+extern std::string gStrInstance;
 
-
-
-
-
-
+#include "Common.h"
+using namespace Random;
 
 #ifdef _UNICODE
 #if defined _M_IX86

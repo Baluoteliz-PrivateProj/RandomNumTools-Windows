@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Ctrl">
+      <UniqueIdentifier>{3a907241-92b8-435f-b53e-3dbc38eb1a8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilc">
+      <UniqueIdentifier>{2dd56aca-be07-44ce-9e04-ecf88b35ceec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -33,6 +39,24 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AGButton.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
+    <ClInclude Include="AGComboBox.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
+    <ClInclude Include="AGEdit.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIO.h">
+      <Filter>Utilc</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilc.h">
+      <Filter>Utilc</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Utilc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
@@ -43,6 +67,18 @@
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AGButton.cpp">
+      <Filter>Ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="AGComboBox.cpp">
+      <Filter>Ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="AGEdit.cpp">
+      <Filter>Ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIO.cpp">
+      <Filter>Utilc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +96,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\FirstLogin.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Start.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\IDB_BTNCLOSE.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\IDB_BTNMIN.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

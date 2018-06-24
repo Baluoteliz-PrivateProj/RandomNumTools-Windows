@@ -33,7 +33,9 @@ CRandomNumToolsWindowsApp::CRandomNumToolsWindowsApp()
 // The one and only CRandomNumToolsWindowsApp object
 
 CRandomNumToolsWindowsApp theApp;
-
+CFileIO gLogRandom;
+CConfig gConfig;
+std::string gStrInstance = "Random";
 
 // CRandomNumToolsWindowsApp initialization
 
