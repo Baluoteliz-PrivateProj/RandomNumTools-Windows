@@ -57,6 +57,9 @@
     <ClInclude Include="Common.h">
       <Filter>Utilc</Filter>
     </ClInclude>
+    <ClInclude Include="TTSWrapper.h">
+      <Filter>Utilc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
@@ -78,6 +81,9 @@
       <Filter>Ctrl</Filter>
     </ClCompile>
     <ClCompile Include="FileIO.cpp">
+      <Filter>Utilc</Filter>
+    </ClCompile>
+    <ClCompile Include="TTSWrapper.cpp">
       <Filter>Utilc</Filter>
     </ClCompile>
   </ItemGroup>

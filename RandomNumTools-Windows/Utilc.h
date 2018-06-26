@@ -10,439 +10,402 @@ namespace CPlusBaluoteli
 {
 	namespace util{
 
-		 std::string  getAbsoluteDir()
+		struct CommonFun
 		{
-			TCHAR path[MAX_PATH] = { 0 };
-			GetModuleFileName(nullptr, path, MAX_PATH);
 
-			std::string filePath = CStringA(path).GetBuffer();
-			return filePath.substr(0, filePath.rfind("\\") + 1);
-		}
-
-		 std::string  getFilePath()
-		{
-			TCHAR path[MAX_PATH] = { 0 };
-			GetModuleFileName(nullptr, path, MAX_PATH);
-			return CStringA(path).GetBuffer();
-		}
-
-		 std::string  getCurRunningExeName()
-		{
-			TCHAR path[MAX_PATH] = { 0 };
-			GetModuleFileName(nullptr, path, MAX_PATH);
-
-			std::string filePath = CStringA(path).GetBuffer();
-			return filePath.substr(filePath.rfind("\\") + 1, filePath.length() - filePath.rfind("\\"));
-		}
-
-		 std::string  getFileAbsolutePath(const std::string &file)
-		{
-			HMODULE hModule = GetModuleHandle(CString(file.c_str()));
-			TCHAR path[MAX_PATH] = { 0 };
-			GetModuleFileName(hModule, path, MAX_PATH);
-			return CStringA(path).GetBuffer();
-		}
-
-		 std::string  getPirorDir(const std::string &file)
-		{
-			HMODULE hModule = GetModuleHandle(CString(file.c_str()));
-			TCHAR path[MAX_PATH] = { 0 };
-			GetModuleFileName(hModule, path, MAX_PATH);
-			std::string fullpath = CStringA(path).GetBuffer();
-			return fullpath.substr(0, fullpath.rfind("\\") + 1);
-		}
-
-		 std::string  getPirorDirEx(const std::string &file)
-		{
-			return file.substr(0, file.rfind("\\") + 1);
-		}
-
-		 std::string  getRootDir(const std::string &file)
-		{
-			std::string FileDir = getFileAbsolutePath(file);
-			return FileDir.substr(0, FileDir.find("\\") + 1);
-		}
-
-		 std::string  int2str(int nNum)
-		{
-			char str[MAX_PATH] = { 0 };
-			_itoa_s(nNum, str, 10);
-			return str;
-		}
-
-		 std::string  float2str(float fValue)
-		{
-			char str[MAX_PATH] = { 0 };
-			sprintf_s(str, "%f", fValue);
-			return str;
-		}
-
-		 int  str2int(const std::string &str)
-		{
-			return atoi(str.c_str());
-		}
-
-		 int  str2long(const std::string &str)
-		{
-			return atoll(str.data());
-		}
-
-		 float  str2float(const std::string &str)
-		{
-			return (float)atof(str.c_str());
-		}
-
-		 CString  s2cs(const std::string &str)
-		{
-			return CString(str.c_str());
-		}
-
-		 std::string  cs2s(const CString &str)
-		{
-			CString sTemp(str);
-			return CStringA(sTemp.GetBuffer()).GetBuffer();
-		}
-
-		 std::string  utf82gbk(const char *utf8)
-		{
-			std::string str;
-
-			if (utf8 != NULL)
+			static std::string PASCAL getAbsoluteDir()
 			{
-				int len = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
-				std::wstring strW;
+				TCHAR path[MAX_PATH] = { 0 };
+				GetModuleFileName(nullptr, path, MAX_PATH);
 
-				strW.resize(len);
-
-				MultiByteToWideChar(CP_UTF8, 0, utf8, -1, (LPWSTR)strW.data(), len);
-
-				len = WideCharToMultiByte(936, 0, strW.data(), len - 1, NULL, 0, NULL, NULL);
-
-				str.resize(len);
-
-				WideCharToMultiByte(936, 0, strW.data(), -1, (LPSTR)str.data(), len, NULL, NULL);
+				std::string filePath = CStringA(path).GetBuffer();
+				return filePath.substr(0, filePath.rfind("\\") + 1);
 			}
 
-			return str;
-		}
-
-		 std::string  gbk2utf8(const char *gbk)
-		{
-			std::string str;
-
-			if (gbk != NULL)
+			static std::string PASCAL getFilePath()
 			{
-				int len = MultiByteToWideChar(936, 0, gbk, -1, NULL, 0);
-				std::wstring strW;
-
-				strW.resize(len);
-
-				MultiByteToWideChar(936, 0, gbk, -1, (LPWSTR)strW.data(), len);
-
-				len = WideCharToMultiByte(CP_UTF8, 0, strW.data(), len - 1, NULL, 0, NULL, NULL);
-
-				str.resize(len);
-
-				WideCharToMultiByte(CP_UTF8, 0, strW.data(), -1, (LPSTR)str.data(), len, NULL, NULL);
+				TCHAR path[MAX_PATH] = { 0 };
+				GetModuleFileName(nullptr, path, MAX_PATH);
+				return CStringA(path).GetBuffer();
 			}
 
-			return str;
-		}
-
-		 std::string  gbk2utf8(const std::string &gbk)
-		{
-			return gbk2utf8(gbk.c_str());
-		}
-
-		 std::string  utf82gbk(const std::string &utf8)
-		{
-			return utf82gbk(utf8.c_str());
-		}
-
-		 std::string  getTime()
-		{
-			SYSTEMTIME st = { 0 };
-			GetLocalTime(&st);
-			CString timeStr;
-			timeStr.Format(_T("%d%02d%02d-%02d%02d%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
-			return cs2s(timeStr);
-		}
-
-		 DWORD  getProcessID(const std::string &processName)
-		{
-			HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
-			PROCESSENTRY32 pe32;
-			pe32.dwSize = sizeof(PROCESSENTRY32);
-			hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-			if (INVALID_HANDLE_VALUE == hProcessSnap)
+			static std::string  PASCAL getCurRunningExeName()
 			{
-				CloseHandle(hProcessSnap);
-				return -1;
+				TCHAR path[MAX_PATH] = { 0 };
+				GetModuleFileName(nullptr, path, MAX_PATH);
+
+				std::string filePath = CStringA(path).GetBuffer();
+				return filePath.substr(filePath.rfind("\\") + 1, filePath.length() - filePath.rfind("\\"));
 			}
 
-			if (!Process32First(hProcessSnap, &pe32))
+			static std::string  PASCAL getFileAbsolutePath(const std::string &file)
 			{
-				CloseHandle(hProcessSnap);
-				return -1;
+				HMODULE hModule = GetModuleHandle(CString(file.c_str()));
+				TCHAR path[MAX_PATH] = { 0 };
+				GetModuleFileName(hModule, path, MAX_PATH);
+				return CStringA(path).GetBuffer();
 			}
-			do
+
+			static std::string PASCAL getPirorDir(const std::string &file)
 			{
-				std::string processNameEnum = CStringA(pe32.szExeFile).GetBuffer();
-				if (processNameEnum == processName)
+				HMODULE hModule = GetModuleHandle(CString(file.c_str()));
+				TCHAR path[MAX_PATH] = { 0 };
+				GetModuleFileName(hModule, path, MAX_PATH);
+				std::string fullpath = CStringA(path).GetBuffer();
+				return fullpath.substr(0, fullpath.rfind("\\") + 1);
+			}
+
+			static std::string  PASCAL getPirorDirEx(const std::string &file) 
+			{
+				return file.substr(0, file.rfind("\\") + 1);
+			}
+
+			static std::string PASCAL getRootDir(const std::string &file)
+			{
+				std::string FileDir = getFileAbsolutePath(file);
+				return FileDir.substr(0, FileDir.find("\\") + 1);
+			}
+
+			static std::string PASCAL int2str(int nNum)
+			{
+				char str[MAX_PATH] = { 0 };
+				_itoa_s(nNum, str, 10);
+				return str;
+			}
+
+			static std::string PASCAL float2str(float fValue)
+			{
+				char str[MAX_PATH] = { 0 };
+				sprintf_s(str, "%f", fValue);
+				return str;
+			}
+
+			static int PASCAL str2int(const std::string &str)
+			{
+				return atoi(str.c_str());
+			}
+
+			static int PASCAL str2long(const std::string &str)
+			{
+				return atoll(str.data());
+			}
+
+			static float PASCAL str2float(const std::string &str)
+			{
+				return (float)atof(str.c_str());
+			}
+
+			static CString PASCAL CommonFun::s2cs(const std::string &str)
+			{
+				return CString(str.c_str());
+			}
+
+			static std::string PASCAL CommonFun::cs2s(const CString &str)
+			{
+				CString sTemp(str);
+				return CStringA(sTemp.GetBuffer()).GetBuffer();
+			}
+
+			static std::string PASCAL utf82gbk(const char *utf8)
+			{
+				std::string str;
+
+				if (utf8 != NULL)
+				{
+					int len = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
+					std::wstring strW;
+
+					strW.resize(len);
+
+					MultiByteToWideChar(CP_UTF8, 0, utf8, -1, (LPWSTR)strW.data(), len);
+
+					len = WideCharToMultiByte(936, 0, strW.data(), len - 1, NULL, 0, NULL, NULL);
+
+					str.resize(len);
+
+					WideCharToMultiByte(936, 0, strW.data(), -1, (LPSTR)str.data(), len, NULL, NULL);
+				}
+
+				return str;
+			}
+
+			static std::string PASCAL gbk2utf8(const char *gbk)
+			{
+				std::string str;
+
+				if (gbk != NULL)
+				{
+					int len = MultiByteToWideChar(936, 0, gbk, -1, NULL, 0);
+					std::wstring strW;
+
+					strW.resize(len);
+
+					MultiByteToWideChar(936, 0, gbk, -1, (LPWSTR)strW.data(), len);
+
+					len = WideCharToMultiByte(CP_UTF8, 0, strW.data(), len - 1, NULL, 0, NULL, NULL);
+
+					str.resize(len);
+
+					WideCharToMultiByte(CP_UTF8, 0, strW.data(), -1, (LPSTR)str.data(), len, NULL, NULL);
+				}
+
+				return str;
+			}
+
+			static std::string  PASCAL gbk2utf8(const std::string &gbk)
+			{
+				return gbk2utf8(gbk.c_str());
+			}
+
+			static std::string  PASCAL utf82gbk(const std::string &utf8)
+			{
+				return utf82gbk(utf8.c_str());
+			}
+
+			static std::string PASCAL getTime()
+			{
+				SYSTEMTIME st = { 0 };
+				GetLocalTime(&st);
+				CString timeStr;
+				timeStr.Format(_T("%d%02d%02d-%02d%02d%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				return CommonFun::cs2s(timeStr);
+			}
+
+			static DWORD PASCAL getProcessID(const std::string &processName)
+			{
+				HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
+				PROCESSENTRY32 pe32;
+				pe32.dwSize = sizeof(PROCESSENTRY32);
+				hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+				if (INVALID_HANDLE_VALUE == hProcessSnap)
 				{
 					CloseHandle(hProcessSnap);
-					hProcessSnap = INVALID_HANDLE_VALUE;
-					return pe32.th32ProcessID;
+					return -1;
 				}
-			} while (Process32Next(hProcessSnap, &pe32));
 
-			CloseHandle(hProcessSnap);
-			return -1;
-		}
-
-		 bool  closeProcess(const std::string &processName, int &num)
-		{
-			DWORD processId = getProcessID(processName);
-			HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
-			if (INVALID_HANDLE_VALUE != processHandle && processHandle)
-			{
-				num++;
-				if (TerminateProcess(processHandle, 0))
+				if (!Process32First(hProcessSnap, &pe32))
 				{
+					CloseHandle(hProcessSnap);
+					return -1;
+				}
+				do
+				{
+					std::string processNameEnum = CStringA(pe32.szExeFile).GetBuffer();
+					if (processNameEnum == processName)
+					{
+						CloseHandle(hProcessSnap);
+						hProcessSnap = INVALID_HANDLE_VALUE;
+						return pe32.th32ProcessID;
+					}
+				} while (Process32Next(hProcessSnap, &pe32));
+
+				CloseHandle(hProcessSnap);
+				return -1;
+			}
+
+			static bool  PASCAL closeProcess(const std::string &processName, int &num)
+			{
+				DWORD processId = getProcessID(processName);
+				HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+				if (INVALID_HANDLE_VALUE != processHandle && processHandle)
+				{
+					num++;
+					if (TerminateProcess(processHandle, 0))
+					{
+					}
+					else
+					{
+						WaitForSingleObject(processHandle, 2000);
+					}
+
+					CloseHandle(processHandle);
 				}
 				else
 				{
-					WaitForSingleObject(processHandle, 2000);
+					return true;
+				}
+				return closeProcess(processName, num);
+			}
+
+			static bool PASCAL closeProcess(DWORD dwProcess){
+
+				HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dwProcess);
+				if (INVALID_HANDLE_VALUE != processHandle){
+					if (TerminateProcess(processHandle, 0)){}
+					else
+						WaitForSingleObject(processHandle, 2000);
+
+					return CloseHandle(processHandle);
+				}
+
+				return false;
+			}
+
+			static void PASCAL closeCurrentProcess()
+			{
+				DWORD processId = GetCurrentProcessId();
+				HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
+				if (INVALID_HANDLE_VALUE != processHandle)
+				{
+					if (TerminateProcess(processHandle, 0))
+					{
+						CloseHandle(processHandle);
+						return;
+					}
+					else
+					{
+						WaitForSingleObject(processHandle, 2000);
+					}
 				}
 
 				CloseHandle(processHandle);
+				return;
 			}
-			else
+
+			static int PASCAL getProcessIdMutil(const std::string &processName)
 			{
-				return true;
-			}
-			return closeProcess(processName, num);
-		}
-
-		 bool  closeProcess(DWORD dwProcess){
-
-			HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dwProcess);
-			if (INVALID_HANDLE_VALUE != processHandle){
-				if (TerminateProcess(processHandle, 0)){}
-				else
-					WaitForSingleObject(processHandle, 2000);
-
-				return CloseHandle(processHandle);
-			}
-
-			return false;
-		}
-
-		 void  closeCurrentProcess()
-		{
-			DWORD processId = GetCurrentProcessId();
-			HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, false, processId);
-			if (INVALID_HANDLE_VALUE != processHandle)
-			{
-				if (TerminateProcess(processHandle, 0))
+				std::vector<DWORD> vecProcessid;
+				HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
+				PROCESSENTRY32 pe32;
+				pe32.dwSize = sizeof(PROCESSENTRY32);
+				hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+				if (INVALID_HANDLE_VALUE == hProcessSnap)
 				{
-					CloseHandle(processHandle);
-					return;
+					return vecProcessid.size();
 				}
-				else
+				if (!Process32First(hProcessSnap, &pe32))
 				{
-					WaitForSingleObject(processHandle, 2000);
+					CloseHandle(hProcessSnap);     // Must clean up the snapshot object!
+					return vecProcessid.size();
 				}
-			}
 
-			CloseHandle(processHandle);
-			return;
-		}
+				do
+				{
+					if (processName == CommonFun::cs2s(pe32.szExeFile)){
 
-		 int  getProcessIdMutil(const std::string &processName)
-		{
-			std::vector<DWORD> vecProcessid;
-			HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
-			PROCESSENTRY32 pe32;
-			pe32.dwSize = sizeof(PROCESSENTRY32);
-			hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-			if (INVALID_HANDLE_VALUE == hProcessSnap)
-			{
-				return vecProcessid.size();
-			}
-			if (!Process32First(hProcessSnap, &pe32))
-			{
-				CloseHandle(hProcessSnap);     // Must clean up the snapshot object!
+						vecProcessid.push_back(pe32.th32ProcessID);
+						printf("processName: %s, processId: %d\n", CStringA(pe32.szExeFile).GetBuffer(), pe32.th32ProcessID);
+					}
+
+				} while (Process32Next(hProcessSnap, &pe32));
+
+				CloseHandle(hProcessSnap);
 				return vecProcessid.size();
 			}
 
-			do
+			static std::vector<DWORD>  PASCAL getProcessMutilVec(const std::string processName)
 			{
-				if (processName == cs2s(pe32.szExeFile)){
-
-					vecProcessid.push_back(pe32.th32ProcessID);
-					printf("processName: %s, processId: %d\n", CStringA(pe32.szExeFile).GetBuffer(), pe32.th32ProcessID);
+				std::vector<DWORD> vecProcessid;
+				HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
+				PROCESSENTRY32 pe32;
+				pe32.dwSize = sizeof(PROCESSENTRY32);
+				hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+				if (INVALID_HANDLE_VALUE == hProcessSnap)
+				{
+					return vecProcessid;
+				}
+				if (!Process32First(hProcessSnap, &pe32))
+				{
+					CloseHandle(hProcessSnap);     // Must clean up the snapshot object!
+					return vecProcessid;
 				}
 
-			} while (Process32Next(hProcessSnap, &pe32));
+				do
+				{
+					if (processName == CommonFun::cs2s(pe32.szExeFile)){
 
-			CloseHandle(hProcessSnap);
-			return vecProcessid.size();
-		}
+						vecProcessid.push_back(pe32.th32ProcessID);
+						printf("processName: %s, processId: %d\n", CStringA(pe32.szExeFile).GetBuffer(), pe32.th32ProcessID);
+					}
 
-		 std::vector<DWORD>  getProcessMutilVec(const std::string processName)
-		{
-			std::vector<DWORD> vecProcessid;
-			HANDLE hProcessSnap = INVALID_HANDLE_VALUE;
-			PROCESSENTRY32 pe32;
-			pe32.dwSize = sizeof(PROCESSENTRY32);
-			hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-			if (INVALID_HANDLE_VALUE == hProcessSnap)
-			{
-				return vecProcessid;
-			}
-			if (!Process32First(hProcessSnap, &pe32))
-			{
-				CloseHandle(hProcessSnap);     // Must clean up the snapshot object!
+				} while (Process32Next(hProcessSnap, &pe32));
+
+				CloseHandle(hProcessSnap);
 				return vecProcessid;
 			}
 
-			do
+			static bool PASCAL registerStartUp()
 			{
-				if (processName == cs2s(pe32.szExeFile)){
+				HKEY hKey;
+				DWORD dwDisposition;
 
-					vecProcessid.push_back(pe32.th32ProcessID);
-					printf("processName: %s, processId: %d\n", CStringA(pe32.szExeFile).GetBuffer(), pe32.th32ProcessID);
+				long lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"), 0, KEY_ALL_ACCESS, &hKey);
+
+				if (lRet == ERROR_SUCCESS)
+				{
+					CString currRunPath = CommonFun::s2cs((getFilePath()));
+					lRet = RegSetValueEx(hKey, _T("RandomNumTools"), 0, REG_SZ, (const unsigned char*)currRunPath.GetBuffer(), (DWORD)(currRunPath.GetLength() * 2));
+					currRunPath.ReleaseBuffer();
+
+					RegCloseKey(hKey);
+					return TRUE;
 				}
 
-			} while (Process32Next(hProcessSnap, &pe32));
-
-			CloseHandle(hProcessSnap);
-			return vecProcessid;
-		}
-
-		 bool  registerStartUp()
-		{
-			HKEY hKey;
-			DWORD dwDisposition;
-
-			long lRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"), 0, KEY_ALL_ACCESS, &hKey);
-
-			if (lRet == ERROR_SUCCESS)
-			{
-				CString currRunPath = s2cs((getFilePath()));
-				lRet = RegSetValueEx(hKey, _T("AgoraWawajiDemo"), 0, REG_SZ, (const unsigned char*)currRunPath.GetBuffer(), (DWORD)(currRunPath.GetLength() * 2));
-				currRunPath.ReleaseBuffer();
-
-				RegCloseKey(hKey);
-				return TRUE;
+				return FALSE;
 			}
 
-			return FALSE;
-		}
+			static DWORD  PASCAL openProcess(const std::string &processName, const std::string &cmdLine)
+			{
+				DWORD processId;
 
-		 DWORD  openProcess(const std::string &processName, const std::string &cmdLine)
-		{
-			DWORD processId;
+				STARTUPINFO si;
+				ZeroMemory(&si, sizeof(STARTUPINFO));
+				si.cb = sizeof(STARTUPINFO);
+				si.dwFlags = STARTF_USESHOWWINDOW;
+				si.wShowWindow = SW_HIDE;
+				PROCESS_INFORMATION pi;
+				ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 
-			STARTUPINFO si;
-			ZeroMemory(&si, sizeof(STARTUPINFO));
-			si.cb = sizeof(STARTUPINFO);
-			si.dwFlags = STARTF_USESHOWWINDOW;
-			si.wShowWindow = SW_HIDE;
-			PROCESS_INFORMATION pi;
-			ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+				CString CmdLine;
+				std::string fullpath = getAbsoluteDir() + processName;
+				CmdLine.Format(_T("%s -%s"), CommonFun::s2cs(fullpath), CommonFun::s2cs(cmdLine));
+				BOOL res = CreateProcess(NULL, (CmdLine).GetBuffer(), NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+				return pi.dwProcessId;
+			}
 
-			CString CmdLine;
-			std::string fullpath = getAbsoluteDir() + processName;
-			CmdLine.Format(_T("%s -%s"), s2cs(fullpath), s2cs(cmdLine));
-			BOOL res = CreateProcess(NULL, (CmdLine).GetBuffer(), NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
-			return pi.dwProcessId;
-		}
+			static std::string PASCAL getRandomAppLogPath(const std::string &strAttribute)
+			{
+				CString strRet;
+				std::string strTime;
+				std::string exeName;
+				std::string pirorDir;
 
-		 std::string  getSigSdkLogPath()
-		{
-			CString strRet;
-			std::string strTime;
-			std::string exeName;
-			std::string pirorDir;
+				pirorDir = getPirorDir(getFilePath());
+				strTime = getTime();
 
-			pirorDir = getPirorDir(getFilePath());
-			strTime = getTime();
+				exeName.append("RandomNumTools_app_");
+				exeName.append(strAttribute);
+				exeName.append(".log");
 
-			exeName.append("AgoraWawaji_Signal");
-			exeName.append(".log");
+				strRet.Format(_T("%slogger\\%s_%s"), CommonFun::s2cs(pirorDir), CommonFun::s2cs(strTime), CommonFun::s2cs(exeName));
+				CString logPirorDir = CommonFun::s2cs(getPirorDirEx(CommonFun::cs2s(strRet)));
+				BOOL res = CreateDirectory(logPirorDir, NULL);
 
-			strRet.Format(_T("%slogger\\%s_%s"), s2cs(pirorDir), s2cs(strTime), s2cs(exeName));
-			CString logPirorDir = s2cs(getPirorDirEx(cs2s(strRet)));
-			BOOL res = CreateDirectory(logPirorDir, NULL);
-
-			return cs2s(strRet);
-		}
-
-		 std::string  getMediaSdkLogPath(const std::string &strAttribute)
-		{
-			CString strRet;
-			std::string strTime;
-			std::string exeName;
-			std::string pirorDir;
-
-			pirorDir = getPirorDir(getFilePath());
-			strTime = getTime();
-
-			exeName.append("AgoraWawaji_MediaSdk_");
-			exeName.append(strAttribute);
-			exeName.append(".log");
-
-			strRet.Format(_T("%slogger\\%s_%s"), s2cs(pirorDir), s2cs(strTime), s2cs(exeName));
-			CString logPirorDir = s2cs(getPirorDirEx(cs2s(strRet)));
-			BOOL res = CreateDirectory(logPirorDir, NULL);
-
-			return cs2s(strRet);
-		}
-
-		 std::string  getAgoraWawajiAppLogPath(const std::string &strAttribute)
-		{
-			CString strRet;
-			std::string strTime;
-			std::string exeName;
-			std::string pirorDir;
-
-			pirorDir = getPirorDir(getFilePath());
-			strTime = getTime();
-
-			exeName.append("AgoraWawaji_app_");
-			exeName.append(strAttribute);
-			exeName.append(".log");
-
-			strRet.Format(_T("%slogger\\%s_%s"), s2cs(pirorDir), s2cs(strTime), s2cs(exeName));
-			CString logPirorDir = s2cs(getPirorDirEx(cs2s(strRet)));
-			BOOL res = CreateDirectory(logPirorDir, NULL);
-
-			return cs2s(strRet);
-		}
+				return CommonFun::cs2s(strRet);
+			}
 
 #if 0
 
-		 std::string  getRandomUid()
-		{
-			int nNumMin = 1000000000;
-			int nNumMax = 9999999999;
-			int nNum = 0;
+			std::string  getRandomUid()
+			{
+				int nNumMin = 1000000000;
+				int nNumMax = 9999999999;
+				int nNum = 0;
 
-			if (TRUE){
+				if (TRUE){
 
-				srand(time(NULL));
-				nNum = nNumMin + MAKELONG(rand(), rand()) % (nNumMax - nNumMin);
-				char logMsg[48] = { '\0' };
-				sprintf_s(logMsg, "Monitor LoginUID: %d\n", nNum);
-				CFormatStr::AgoraOutDebugStr(s2cs(logMsg));
+					srand(time(NULL));
+					nNum = nNumMin + MAKELONG(rand(), rand()) % (nNumMax - nNumMin);
+					char logMsg[48] = { '\0' };
+					sprintf_s(logMsg, "Monitor LoginUID: %d\n", nNum);
+					CFormatStr::AgoraOutDebugStr(CommonFun::s2cs(logMsg));
+				}
+
+				return (nNum > 0) ? int2str(nNum) : "";
 			}
 
-			return (nNum > 0) ? int2str(nNum) : "";
-		}
-
 #endif
+		};
 	}
 
 	namespace FormatStr{
@@ -450,11 +413,11 @@ namespace CPlusBaluoteli
 		class CFormatStr{
 		public:
 
-			static void PASCAL AgoraMessageBox(LPCTSTR lpFormat, ...){
+			static void PASCAL Baluoteliz_MessageBox(LPCTSTR lpFormat, ...){
 
 				TCHAR szBuffer[1024] = { _T("\0") };
 				va_list args;
-				_tcsnccat_s(szBuffer, util::s2cs(gStrInstance + ": "), gStrInstance.length() + 2);
+				_tcsnccat_s(szBuffer, util::CommonFun::s2cs(gStrInstance + ": "), gStrInstance.length() + 2);
 				va_start(args, lpFormat);
 				_vsnwprintf(szBuffer + _tcslen(szBuffer), sizeof(szBuffer) / sizeof(TCHAR) - _tcslen(szBuffer), lpFormat, args);
 				va_end(args);
@@ -462,7 +425,7 @@ namespace CPlusBaluoteli
 				AfxMessageBox(szBuffer);
 			}
 
-			static void PASCAL AgoraOutDebugStr(LPCTSTR lpFormat, ...){
+			static void PASCAL Baluoteliz_OutDebugStr(LPCTSTR lpFormat, ...){
 
 				TCHAR szBuffer[1024] = { _T("\0") };
 				va_list args;
@@ -474,7 +437,7 @@ namespace CPlusBaluoteli
 				OutputDebugString(szBuffer);
 			}
 
-			static void  PASCAL AgoraWriteLog(LPSTR lpFormat, ...) {
+			static void  PASCAL Baluoteliz_WriteLog(LPSTR lpFormat, ...) {
 
 				char szBuffer[1024] = { '\0' };
 				va_list args;

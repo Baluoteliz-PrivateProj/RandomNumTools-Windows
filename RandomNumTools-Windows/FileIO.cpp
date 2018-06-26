@@ -211,7 +211,7 @@ namespace CPlusBaluoteli
 	bool CFileIni::write(const std::string &section, const std::string &key, const std::string &Value)
 	{
 		assert(isValid_);
-		return (bool)(WritePrivateProfileString(s2cs(section), s2cs(key), s2cs(Value), s2cs(iniFile_)));
+		return (bool)(WritePrivateProfileString(CommonFun::s2cs(section), CommonFun::s2cs(key), CommonFun::s2cs(Value), CommonFun::s2cs(iniFile_)));
 	}
 
 	std::string CFileIni::read(const std::string &section, const std::string &key)
@@ -219,8 +219,8 @@ namespace CPlusBaluoteli
 		assert(isValid_);
 		std::string Value;
 		TCHAR returnStr[MAX_PATH] = { 0 };
-		GetPrivateProfileString(s2cs(section), s2cs(key), _T(""), returnStr, MAX_PATH, s2cs(iniFile_));
-		Value = cs2s(returnStr);
+		GetPrivateProfileString(CommonFun::s2cs(section), CommonFun::s2cs(key), _T(""), returnStr, MAX_PATH, CommonFun::s2cs(iniFile_));
+		Value = CommonFun::cs2s(returnStr);
 		return Value;
 	}
 
@@ -228,7 +228,7 @@ namespace CPlusBaluoteli
 	{
 		assert(isValid_);
 		TCHAR returnStr[MAX_PATH] = { 0 }; std::string sectionItem;
-		DWORD retNum = GetPrivateProfileSectionNames(returnStr, MAX_PATH, s2cs(iniFile_));
+		DWORD retNum = GetPrivateProfileSectionNames(returnStr, MAX_PATH, CommonFun::s2cs(iniFile_));
 		if (0 < retNum)
 		{
 			int strLen = retNum;
@@ -254,7 +254,7 @@ namespace CPlusBaluoteli
 	{
 		assert(isValid_);
 		TCHAR returnStr[MAX_PATH] = { 0 }; std::string key; std::string value; bool isKey = true;
-		DWORD retNum = GetPrivateProfileSection(s2cs(section), returnStr, MAX_PATH, s2cs(iniFile_));
+		DWORD retNum = GetPrivateProfileSection(CommonFun::s2cs(section), returnStr, MAX_PATH, CommonFun::s2cs(iniFile_));
 		if (0 < retNum)
 		{
 			int strLen = retNum;
@@ -317,8 +317,8 @@ namespace CPlusBaluoteli
 
 	CConfig::CConfig() :CIniBase("")
 	{
-		//std::string path = getAbsoluteDir() + "AgoraWawaji.ini";
-		pIniInstance_->openFile("..\\Release\\RundomConfig.ini");
+		std::string path = CommonFun::getAbsoluteDir() + "AgoraWawaji.ini";
+		pIniInstance_->openFile(path);
 	}
 
 	CConfig::~CConfig()
@@ -332,6 +332,9 @@ namespace CPlusBaluoteli
 
 	}
 
-	__IMPLEMENT_INICONFIG_FUN(CConfig, AppId, INI_BaseInfo, INI_BaseInfo_APPID)
+	__IMPLEMENT_INICONFIG_FUN(CConfig, VendorName, INI_BaseInfo, INI_BaseInfo_VendorName)
+		__IMPLEMENT_INICONFIG_FUN(CConfig, TitleName, INI_BaseInfo, INI_BaseInfo_TitleName)
+		__IMPLEMENT_INICONFIG_FUN(CConfig, TagName, INI_BaseInfo, INI_BaseInfo_TagName)
+		__IMPLEMENT_INICONFIG_FUN(CConfig, ImprtDirPre, INI_BaseInfo, INI_BaseInfo_ImportFileDirPre)
 
 }

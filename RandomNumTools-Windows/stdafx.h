@@ -46,6 +46,15 @@ extern std::string gStrInstance;
 #include "Common.h"
 using namespace Random;
 
+#include <mmsystem.h>
+#pragma comment( lib, "Winmm.lib" )
+
+#pragma warning(disable:4101)
+#pragma warning(disable:4800)
+#pragma warning(disable:4244)
+#pragma warning(disable:4996)
+#pragma warning(disable:4018)
+
 #ifdef _UNICODE
 #if defined _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

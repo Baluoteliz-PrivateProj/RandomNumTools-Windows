@@ -6,6 +6,7 @@
 #include "AGButton.h"
 #include "AGEdit.h"
 #include "AGComboBox.h"
+#include "TTSWrapper.h"
 
 // CRandomNumToolsWindowsDlg dialog
 class CRandomNumToolsWindowsDlg : public CDialogEx
@@ -32,11 +33,16 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg LRESULT OnNcHitTest(CPoint point);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	DECLARE_MESSAGE_MAP()
 
 protected:
 	inline void initCtrl();
 	inline void uninitCtrl();
+
+	inline void initTTS();
+	inline void uninitTTS();
+
 	inline void DrawClient(CDC *pDC);
 
 	afx_msg void OnBnClickedBtnClose();
@@ -49,6 +55,11 @@ protected:
 	afx_msg void OnBnClickedButtonMute();
 	afx_msg void OnBnClickedButtonStart();
 	afx_msg void OnBnClickedButtonSure();
+
+	inline void playSoundBk();
+	inline void playSoundHit();
+
+	static UINT ThreadTTSProc(LPVOID param);
 
 private:
 
@@ -75,4 +86,9 @@ private:
 
 	CString m_strVendorTitle;
 	CString m_strVersionTag;
+
+	CTTSWrapper m_TtsWrapper;
+	BOOL m_bResume;
+	CString m_StrHitName;
+	CWinThread* m_pThreadTTS;
 };
