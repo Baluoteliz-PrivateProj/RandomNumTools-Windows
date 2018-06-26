@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "Utilc.h"
 using namespace CPlusBaluoteli;
+using namespace CPlusBaluoteli::util;
 using namespace CPlusBaluoteli::FormatStr;
 
 #ifdef _DEBUG
@@ -224,7 +225,7 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 
 	gConfig.setTagName("V1.0.0,Build100,2018/06/25,V1.0.0  @baluoteliz@gmail.com All Right Reserverd");
 	gConfig.setTitleName("上海兆言网络科技有限公司");
-	gConfig.setImprtDirPre("C:\\");
+	gConfig.setImportDirPrefix("C:\\");
 	gConfig.setVendorName("上海智慧树");
 
 	m_strVendorTitle = _T("上海兆言网络科技有限公司");
@@ -411,49 +412,66 @@ void CRandomNumToolsWindowsDlg::OnTimer(UINT_PTR nIDEvent)
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonImportfile()
 {
 	// TODO: Add your control notification handler code here
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 	
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonImportfile"));
+	CFileDialog ImportFileDlg(TRUE, NULL,NULL ,0, NULL, this);
+	std::string strDefPath = util::CommonFun::getFilePath();
+	ImportFileDlg.m_ofn.lpstrInitialDir = util::CommonFun::s2cs(strDefPath);
+	ImportFileDlg.m_ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT;
+	ImportFileDlg.m_ofn.lpstrFilter = L"数据文档(*.dat)|*.dat|Normal text file (*.txt)|*.txt||";
+	
+	INT_PTR nResponse = ImportFileDlg.DoModal();
+	if (IDOK == nResponse) {
+
+		CString strOpenFileName = ImportFileDlg.GetPathName();
+		gConfig.setImportDirPrefix(CommonFun::cs2s(strOpenFileName));
+		
+
+		int i = 0;
+	}
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonFullscreen()
 {
 	// TODO: Add your control notification handler code here
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonFullscreen"));
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonConfig()
 {
 	// TODO: Add your control notification handler code here
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonConfig"));
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonAdd()
 {
 	// TODO: Add your control notification handler code here
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonAdd"));
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonDesignation()
 {
 	// TODO: Add your control notification handler code here
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonDesignation"));
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonMute()
 {
 	// TODO: Add your control notification handler code here
-	CFormatStr::Baluoteliz_MessageBox(_T("OnBnClickedButtonMute"));
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 }
 
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonStart()
 {
 	// TODO: Add your control notification handler code here
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
 	m_btnStart.EnableWindow(FALSE);
 	m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
 	playSoundBk();
@@ -467,6 +485,8 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonStart()
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 {
 	// TODO: Add your control notification handler code here
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
 	m_btnSure.EnableWindow(FALSE);
 	m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
 	playSoundHit();
@@ -478,6 +498,8 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
 {
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
 	uninitTTS();
 	uninitCtrl();
 
@@ -486,5 +508,7 @@ void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnMin()
 {
+	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
 	ShowWindow(SW_MINIMIZE);
 }

@@ -335,6 +335,6 @@ namespace CPlusBaluoteli
 	__IMPLEMENT_INICONFIG_FUN(CConfig, VendorName, INI_BaseInfo, INI_BaseInfo_VendorName)
 		__IMPLEMENT_INICONFIG_FUN(CConfig, TitleName, INI_BaseInfo, INI_BaseInfo_TitleName)
 		__IMPLEMENT_INICONFIG_FUN(CConfig, TagName, INI_BaseInfo, INI_BaseInfo_TagName)
-		__IMPLEMENT_INICONFIG_FUN(CConfig, ImprtDirPre, INI_BaseInfo, INI_BaseInfo_ImportFileDirPre)
+		__IMPLEMENT_INICONFIG_FUN(CConfig, ImportDirPrefix, INI_BaseInfo, INI_BaseInfo_ImportFileDirPrefix)
 
 }

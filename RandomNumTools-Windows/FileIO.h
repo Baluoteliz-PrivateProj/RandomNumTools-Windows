@@ -88,7 +88,7 @@ namespace CPlusBaluoteli
 #define INI_BaseInfo_VendorName								"VendorName"
 #define INI_BaseInfo_TitleName									"TitleName"
 #define INI_BaseInfo_TagName									"TagName"
-#define INI_BaseInfo_ImportFileDirPre							"ImprtDirPre"
+#define INI_BaseInfo_ImportFileDirPrefix						"ImportDirPrefix"
 
 	class CConfig :public CIniBase
 	{
@@ -101,7 +101,7 @@ namespace CPlusBaluoteli
 		__DECLARE_INICONFIG_FUN(VendorName)
 		__DECLARE_INICONFIG_FUN(TitleName)
 		__DECLARE_INICONFIG_FUN(TagName)
-		__DECLARE_INICONFIG_FUN(ImprtDirPre)
+		__DECLARE_INICONFIG_FUN(ImportDirPrefix)
 
 	private:
 
