@@ -53,7 +53,6 @@ UINT CRandomNumToolsWindowsDlg::ThreadTTSProc(LPVOID param)
 	CRandomNumToolsWindowsDlg* pVoid = (CRandomNumToolsWindowsDlg*)param;
 	while (!pVoid->m_bResume){
 
-		Sleep(500);
 		if (_T("") != pVoid->m_StrHitName) {
 
 			DWORD dwStart = GetTickCount();
@@ -67,7 +66,11 @@ UINT CRandomNumToolsWindowsDlg::ThreadTTSProc(LPVOID param)
 
 			pVoid->m_StrHitName = _T("");
 		}
+		
+		if (pVoid->m_bResume)
+			break;
 
+		Sleep(500);
 	}
 
 	return 0;
@@ -262,7 +265,11 @@ inline void CRandomNumToolsWindowsDlg::uninitTTS()
 
 	DWORD dwExitCode = 0;
 	GetExitCodeThread(m_pThreadTTS->m_hThread, &dwExitCode);
-	AfxEndThread(dwExitCode);
+	//AfxEndThread(dwExitCode);
+	//ExitThread(dwExitCode);
+	WaitForSingleObject(m_pThreadTTS->m_hThread, INFINITY);
+	CloseHandle(m_pThreadTTS->m_hThread);
+
 	KillTimer(1);
 
 	m_TtsWrapper.DeleteSpVoice();

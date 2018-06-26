@@ -317,7 +317,7 @@ namespace CPlusBaluoteli
 
 	CConfig::CConfig() :CIniBase("")
 	{
-		std::string path = CommonFun::getAbsoluteDir() + "AgoraWawaji.ini";
+		std::string path = CommonFun::getAbsoluteDir() + "RundomConfig.ini";
 		pIniInstance_->openFile(path);
 	}
 
