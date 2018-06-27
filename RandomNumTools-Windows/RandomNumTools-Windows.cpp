@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "RandomNumTools-Windows.h"
 #include "RandomNumTools-WindowsDlg.h"
+#include "Utilc.h"
+using namespace CPlusBaluoteli;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,6 +74,8 @@ BOOL CRandomNumToolsWindowsApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
+	gLogRandom.openLog(util::CommonFun::getRandomAppLogPath("dump"));
+
 	CRandomNumToolsWindowsDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
@@ -97,6 +101,7 @@ BOOL CRandomNumToolsWindowsApp::InitInstance()
 		delete pShellManager;
 	}
 
+	gLogRandom.close();
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;

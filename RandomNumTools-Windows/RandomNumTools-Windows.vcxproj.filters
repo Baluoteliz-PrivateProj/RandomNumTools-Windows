@@ -9,15 +9,18 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Ctrl">
       <UniqueIdentifier>{3a907241-92b8-435f-b53e-3dbc38eb1a8c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utilc">
       <UniqueIdentifier>{2dd56aca-be07-44ce-9e04-ecf88b35ceec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dlg">
+      <UniqueIdentifier>{77c39e75-f874-4f5e-9b0a-ac7af0ff7517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,9 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RandomNumTools-Windows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RandomNumTools-WindowsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -60,12 +60,30 @@
     <ClInclude Include="TTSWrapper.h">
       <Filter>Utilc</Filter>
     </ClInclude>
+    <ClInclude Include="DlgConfig.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgImportProj.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomNumTools-WindowsDlg.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgImportNew.h">
+      <Filter>Dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgImportEdit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjDataManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Utilc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RandomNumTools-WindowsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -85,6 +103,24 @@
     </ClCompile>
     <ClCompile Include="TTSWrapper.cpp">
       <Filter>Utilc</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgConfig.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgImportProj.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomNumTools-WindowsDlg.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgImportNew.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgImportEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjDataManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +147,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\IDB_BTNMIN.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\IDB_DLG_PARAM.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

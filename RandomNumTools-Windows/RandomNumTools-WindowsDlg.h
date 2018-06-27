@@ -42,6 +42,7 @@ protected:
 
 	inline void initTTS();
 	inline void uninitTTS();
+	inline void stop();
 
 	inline void DrawClient(CDC *pDC);
 

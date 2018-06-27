@@ -105,10 +105,16 @@
     <ClInclude Include="AGComboBox.h" />
     <ClInclude Include="AGEdit.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="DlgConfig.h" />
+    <ClInclude Include="DlgImportEdit.h" />
+    <ClInclude Include="DlgImportNew.h" />
+    <ClInclude Include="DlgImportProj.h" />
     <ClInclude Include="FileIO.h" />
+    <ClInclude Include="ProjDataManager.h" />
     <ClInclude Include="RandomNumTools-Windows.h" />
     <ClInclude Include="RandomNumTools-WindowsDlg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TTSWrapper.h" />
@@ -118,7 +124,12 @@
     <ClCompile Include="AGButton.cpp" />
     <ClCompile Include="AGComboBox.cpp" />
     <ClCompile Include="AGEdit.cpp" />
+    <ClCompile Include="DlgConfig.cpp" />
+    <ClCompile Include="DlgImportEdit.cpp" />
+    <ClCompile Include="DlgImportNew.cpp" />
+    <ClCompile Include="DlgImportProj.cpp" />
     <ClCompile Include="FileIO.cpp" />
+    <ClCompile Include="ProjDataManager.cpp" />
     <ClCompile Include="RandomNumTools-Windows.cpp" />
     <ClCompile Include="RandomNumTools-WindowsDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -137,6 +148,7 @@
     <Image Include="res\FirstLogin.bmp" />
     <Image Include="res\IDB_BTNCLOSE.bmp" />
     <Image Include="res\IDB_BTNMIN.bmp" />
+    <Image Include="res\IDB_DLG_PARAM.bmp" />
     <Image Include="res\RandomNumTools-Windows.ico" />
     <Image Include="res\Start.bmp" />
   </ItemGroup>

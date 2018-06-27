@@ -11,6 +11,9 @@ using namespace CPlusBaluoteli;
 using namespace CPlusBaluoteli::util;
 using namespace CPlusBaluoteli::FormatStr;
 
+#include "DlgConfig.h"
+#include "DlgImportProj.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -57,22 +60,23 @@ UINT CRandomNumToolsWindowsDlg::ThreadTTSProc(LPVOID param)
 		if (_T("") != pVoid->m_StrHitName) {
 
 			DWORD dwStart = GetTickCount();
-			char szbuf[MAX_PATH] = { '\0' };
-			sprintf_s(szbuf, "%s,%s,%d\n", "ThreadTTSProc", util::CommonFun::cs2s(pVoid->m_StrHitName).data(),GetTickCount());
-			OutputDebugStringA(szbuf);
+			TCHAR szbuf[MAX_PATH] = { '\0' };
+			swprintf_s(szbuf, _T("%s,%s,%d\n"), L"ThreadTTSProc", (pVoid->m_StrHitName),GetTickCount());
+			OutputDebugStringW(szbuf);
 
 			pVoid->m_TtsWrapper.Speak(pVoid->m_StrHitName);
 			DWORD dwEnd = GetTickCount();
 			DWORD dwInterval = dwEnd - dwStart;
 
-			pVoid->m_StrHitName = _T("");
+			//pVoid->m_StrHitName = _T("");
 		}
-		
-		if (pVoid->m_bResume)
-			break;
 
-		Sleep(500);
+		//Sleep(500);
+		pVoid->m_pThreadTTS->SuspendThread();
 	}
+
+	CFormatStr::Baluoteliz_WriteLog("ThreadProc Exit m_bResume: %d\n", pVoid->m_bResume);
+	pVoid->SetTimer(2, 1000, NULL);
 
 	return 0;
 }
@@ -255,21 +259,22 @@ inline void CRandomNumToolsWindowsDlg::initTTS()
 	m_TtsWrapper.SetRate(0);
 	m_TtsWrapper.SetVolume(100);
 
-	SetTimer(1, 2000, nullptr);
+	//SetTimer(1, 1000, nullptr);
 	AFX_THREADPROC threadTTsProc = ThreadTTSProc;
 	m_pThreadTTS = AfxBeginThread(threadTTsProc, this);
 }
 
 inline void CRandomNumToolsWindowsDlg::uninitTTS()
 {
-	m_bResume = TRUE;
-
 	DWORD dwExitCode = 0;
-	GetExitCodeThread(m_pThreadTTS->m_hThread, &dwExitCode);
-	//AfxEndThread(dwExitCode);
-	//ExitThread(dwExitCode);
-	WaitForSingleObject(m_pThreadTTS->m_hThread, INFINITY);
-	CloseHandle(m_pThreadTTS->m_hThread);
+	if (0 != GetExitCodeThread(m_pThreadTTS->m_hThread, &dwExitCode)) {
+		
+		//AfxEndThread(dwExitCode);
+		//ExitThread(dwExitCode);
+		//WaitForSingleObject(m_pThreadTTS->m_hThread, INFINITY);
+		//CloseHandle(m_pThreadTTS->m_hThread);
+		AfxEndThread(dwExitCode);
+	}
 
 	KillTimer(1);
 
@@ -277,12 +282,21 @@ inline void CRandomNumToolsWindowsDlg::uninitTTS()
 	m_TtsWrapper.UnInit();
 }
 
+inline void CRandomNumToolsWindowsDlg::stop()
+{
+	CFormatStr::Baluoteliz_WriteLog("Stop\n");
+	uninitTTS();
+	CFormatStr::Baluoteliz_WriteLog("uninitTTS Already Exit\n");
+	uninitCtrl();
+}
 
 inline void CRandomNumToolsWindowsDlg::DrawClient(CDC *pDC)
 {
 	CRect rtText;
 	CRect rtClient;
 	CFont* defFont = pDC->SelectObject(&m_ftTitle);
+
+	m_strVendorTitle = util::CommonFun::s2cs(gConfig.getVendorName());
 
 	GetClientRect(&rtClient);
 	pDC->FillSolidRect(rtClient.right / 2 - 200, 5, 400, 24, RGB(214, 219, 233));
@@ -404,8 +418,19 @@ void CRandomNumToolsWindowsDlg::OnTimer(UINT_PTR nIDEvent)
 		char szbuf1[MAX_PATH] = { '\0' };
 		sprintf_s(szbuf1, "Timer nCount:%d, %d\n", nCount, GetTickCount());
 		OutputDebugStringA(szbuf1);
+
+		m_pThreadTTS->ResumeThread();
  
 		m_StrHitName = util::CommonFun::s2cs(util::CommonFun::int2str(nCount));
+	}
+
+	if (2 == nIDEvent) {
+	
+		CFormatStr::Baluoteliz_WriteLog("Enter Timer nIDEvent : %d \n", nIDEvent);
+		KillTimer(nIDEvent);
+		stop();
+		PostMessage(WM_COMMAND, WPARAM(IDCANCEL), NULL);
+		CFormatStr::Baluoteliz_WriteLog("postMessge IDCANCLE");
 	}
 }
 
@@ -413,22 +438,32 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonImportfile()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
-	
-	CFileDialog ImportFileDlg(TRUE, NULL,NULL ,0, NULL, this);
+
+#if 0
 	std::string strDefPath = util::CommonFun::getFilePath();
-	ImportFileDlg.m_ofn.lpstrInitialDir = util::CommonFun::s2cs(strDefPath);
-	ImportFileDlg.m_ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT;
-	ImportFileDlg.m_ofn.lpstrFilter = L"数据文档(*.dat)|*.dat|Normal text file (*.txt)|*.txt||";
-	
+	CString strDefPathName = util::CommonFun::s2cs(strDefPath);
+	CFileDialog ImportFileDlg(TRUE, NULL, strDefPathName, 
+		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT
+		, L"数据文档(*.dat)|*.dat|Normal text file (*.txt)|*.txt||", this);
+
 	INT_PTR nResponse = ImportFileDlg.DoModal();
 	if (IDOK == nResponse) {
 
 		CString strOpenFileName = ImportFileDlg.GetPathName();
 		gConfig.setImportDirPrefix(CommonFun::cs2s(strOpenFileName));
-		
-
-		int i = 0;
 	}
+#else
+
+	CDlgImportProj dlgImportProj;
+	INT_PTR nResponse = dlgImportProj.DoModal();
+	if (IDOK == nResponse) {
+
+	}
+	else if (IDCANCEL == nResponse) {
+
+	}
+
+#endif
 }
 
 
@@ -443,6 +478,13 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonConfig()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
+	CDlgConfig dlgConfig;
+	INT_PTR nResponse = dlgConfig.DoModal();
+	if (IDOK == nResponse) {
+
+		Invalidate(TRUE);
+	}
 }
 
 
@@ -494,16 +536,24 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 	m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
 	m_btnSure.Invalidate(TRUE);
 	m_btnStart.Invalidate(TRUE);
+
+	m_pThreadTTS->ResumeThread();
+	m_StrHitName = L"周磊刚";
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
 {
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
-	uninitTTS();
-	uninitCtrl();
-
-	CDialogEx::OnCancel();;
+	KillTimer(1);
+	m_bResume = TRUE;
+	DWORD dwRet = 0;
+	do
+	{
+		Sleep(100);
+		dwRet = m_pThreadTTS->ResumeThread();
+		CFormatStr::Baluoteliz_WriteLog("ResumeThread Return: %d;  m_bResume: %d\n", dwRet,m_bResume);
+	} while ( 1 != dwRet);
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnMin()

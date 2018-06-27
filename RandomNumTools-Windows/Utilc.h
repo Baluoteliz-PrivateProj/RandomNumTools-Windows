@@ -52,7 +52,7 @@ namespace CPlusBaluoteli
 				TCHAR path[MAX_PATH] = { 0 };
 				GetModuleFileName(hModule, path, MAX_PATH);
 				std::string fullpath = CStringA(path).GetBuffer();
-				return fullpath.substr(0, fullpath.rfind("\\") + 1);
+				return fullpath.substr(0, fullpath.rfind("\\"));
 			}
 
 			static std::string  PASCAL getPirorDirEx(const std::string &file) 
@@ -371,6 +371,7 @@ namespace CPlusBaluoteli
 				std::string pirorDir;
 
 				pirorDir = getPirorDir(getFilePath());
+				pirorDir = getPirorDirEx(pirorDir);
 				strTime = getTime();
 
 				exeName.append("RandomNumTools_app_");
@@ -445,7 +446,7 @@ namespace CPlusBaluoteli
 
 				SYSTEMTIME st;
 				GetLocalTime(&st);
-				sprintf_s(szBuffer, "%04d%02d%02d:%02d%02d%02d [%s] ", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, gStrInstance.data());
+				sprintf_s(szBuffer, "%04d%02d%02d:%02d%02d%02d%03d [%s] ", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond,st.wMilliseconds, gStrInstance.data());
 
 				_vsnprintf(szBuffer + strlen(szBuffer), sizeof(szBuffer) / sizeof(char) - strlen(szBuffer), lpFormat, args);
 				va_end(args);
