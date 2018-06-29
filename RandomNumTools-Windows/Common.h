@@ -21,6 +21,12 @@ namespace Random {
 	const TCHAR* const KStrEdit = _T("编辑");
 	const TCHAR* const KStrDelete = _T("删除");
 
+	const TCHAR* const KCtrlItemIndex = _T("序号");
+	const TCHAR* const KCtrlItemName = _T("名称");
+	const TCHAR* const KCtrlItemCount = _T("文件数");
+
+	const TCHAR* const KFileNameMute = _T("Mute.dat");
+	const TCHAR* const KFileNameDesignation = _T("Designation.dat");
 
 	enum eTypeData{
 		eType_NULL = 0x00,

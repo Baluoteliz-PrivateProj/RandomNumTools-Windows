@@ -81,6 +81,9 @@
     <ClInclude Include="Singleton.h">
       <Filter>Utilc</Filter>
     </ClInclude>
+    <ClInclude Include="AGListCtrl.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
@@ -121,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="ProjDataManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AGListCtrl.cpp">
+      <Filter>Ctrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,10 @@
 #include "DlgImportEdit.h"
 #include "afxdialogex.h"
 
+#include "Utilc.h"
+using namespace CPlusBaluoteli;
+using namespace CPlusBaluoteli::control;
+#include "ProjDataManager.h"
 
 // CDlgImportEdit dialog
 

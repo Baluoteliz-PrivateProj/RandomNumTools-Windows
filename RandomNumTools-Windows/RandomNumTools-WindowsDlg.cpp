@@ -14,6 +14,10 @@ using namespace CPlusBaluoteli::FormatStr;
 #include "DlgConfig.h"
 #include "DlgImportProj.h"
 
+
+using namespace CPlusBaluoteli::control;
+#include "ProjDataManager.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -159,6 +163,38 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+#if 0
+	std::string mainbuffer;
+	int nCount = 0;
+	FILE *pFile = fopen("..\\data\\aaa\\aaa.dat", "ab+");
+	fflush(pFile);
+	long llen1 = ftell(pFile);
+	char buffer[10];
+	int nLen = 8;
+	if (NULL != pFile) {
+		while (!feof(pFile)) {
+			ZeroMemory(buffer, nLen);
+			nCount = fread(buffer, sizeof(char), nLen, pFile);
+			if (ferror(pFile)) {
+				break;
+			}
+			mainbuffer.append(buffer,nCount);
+			break;
+		}
+	}
+
+	llen1 = ftell(pFile);
+	int nres = fseek(pFile, 0, SEEK_END);
+	int nWritten = fwrite("Õı√Õ\r\n", 1, 6, pFile);
+	fclose(pFile);
+#endif
+	
+#if 0
+	CFileData filedata("..\\data\\aaa\\11.dat", "..\\data\\aaa\\mute.dat", "..\\data\\aaa\\designation.dat");
+
+#endif
+
+
 	SetBackgroundImage(IDB_BITMAP_MAIN);	
 	initCtrl();
 	initTTS();

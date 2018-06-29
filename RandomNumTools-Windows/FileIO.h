@@ -21,6 +21,8 @@ namespace CPlusBaluoteli
 		std::string readLine();
 		std::string read();
 
+		void resetFile(DWORD dwMoveMethod  = FILE_BEGIN);
+
 	public:
 		static bool generatorFile(const std::string &path);
 

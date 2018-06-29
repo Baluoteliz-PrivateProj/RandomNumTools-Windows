@@ -456,4 +456,145 @@ namespace CPlusBaluoteli
 		};
 	}
 
+	namespace control {
+
+		class CLock
+		{
+		public:
+			CLock(){
+				m_pCriticalSection = new CRITICAL_SECTION;
+				assert(m_pCriticalSection);
+				InitializeCriticalSection(m_pCriticalSection);
+			}
+			~CLock(){
+				if (m_pCriticalSection){
+					DeleteCriticalSection(m_pCriticalSection);
+					delete m_pCriticalSection;
+					m_pCriticalSection = nullptr;
+				}
+			}
+
+			void lock(){
+				EnterCriticalSection(m_pCriticalSection);
+			}
+
+			void unlock(){
+				LeaveCriticalSection(m_pCriticalSection);
+			}
+
+		private:
+			LPCRITICAL_SECTION m_pCriticalSection;
+		};
+
+		class CAutoLock
+		{
+		public:
+			CAutoLock(CLock *pLock) :m_pLock(pLock){
+				assert(m_pLock);
+				m_pLock->lock();
+			}
+			~CAutoLock(){
+				m_pLock->unlock();
+			}
+
+		private:
+			CLock *m_pLock;
+		};
+
+		class CHighResoluteFrameCtrl
+		{//Get frame rate in real time. More accurate.
+		public:
+			CHighResoluteFrameCtrl(){
+				tickInterval_ = 0;
+				frameCount_ = 0;
+				counterInterval_.QuadPart = 0;
+				lfrequency_.QuadPart = 0;
+				counterBegin_.QuadPart = 0;
+				counterPiror_.QuadPart = 0;
+				counterNext_.QuadPart = 0;
+			}
+
+			~CHighResoluteFrameCtrl(){
+				tickInterval_ = 0;
+				frameCount_ = 0;
+				counterInterval_.QuadPart = 0;
+				lfrequency_.QuadPart = 0;
+				counterBegin_.QuadPart = 0;
+				counterPiror_.QuadPart = 0;
+				counterNext_.QuadPart = 0;
+			}
+
+			void setInterval(unsigned int interval){
+
+				assert(interval && 0 < interval);
+				if (tickInterval_ == interval)
+				{
+					return;
+				}
+				if (tickInterval_)
+				{
+					tickInterval_ = 0;
+					frameCount_ = 0;
+					counterInterval_.QuadPart = 0;
+					lfrequency_.QuadPart = 0;
+					counterBegin_.QuadPart = 0;
+					counterPiror_.QuadPart = 0;
+					counterNext_.QuadPart = 0;
+				}
+				tickInterval_ = interval;
+
+				QueryPerformanceFrequency(&lfrequency_);
+				QueryPerformanceCounter(&counterBegin_);
+				counterPiror_ = counterBegin_;
+				counterInterval_.QuadPart = lfrequency_.QuadPart * tickInterval_ / 1000;
+			}
+
+			float rate(){
+				LARGE_INTEGER counterCurrent;
+				QueryPerformanceCounter(&counterCurrent);
+				return float(frameCount_ / ((counterCurrent.QuadPart - counterBegin_.QuadPart) / lfrequency_.QuadPart));
+			}
+
+			int wait(){
+
+				if (!counterInterval_.QuadPart)
+				{
+					printf("please setInterval first!!!!!!\n");
+					return false;
+				}
+
+				frameCount_++;
+				LARGE_INTEGER counterCurrent;
+				QueryPerformanceCounter(&counterCurrent);
+				LONGLONG counterEscape = counterInterval_.QuadPart * frameCount_ - (counterCurrent.QuadPart - counterBegin_.QuadPart);
+				LONGLONG res = counterEscape;
+
+				//TO DO
+				while (0 < counterEscape)
+				{
+					Sleep(1);
+					QueryPerformanceCounter(&counterCurrent);
+					counterEscape = counterInterval_.QuadPart * frameCount_ - (counterCurrent.QuadPart - counterBegin_.QuadPart);
+				}
+
+				return (int)res;
+			}
+
+			int getFrameCount(){
+
+				return frameCount_;
+			}
+
+		private:
+			unsigned int tickInterval_;
+			int frameCount_;
+			LARGE_INTEGER lfrequency_;
+			LARGE_INTEGER counterInterval_;
+			LARGE_INTEGER counterBegin_;
+			LARGE_INTEGER counterPiror_;
+			LARGE_INTEGER counterNext_;
+		};
+
+	}
+
 }

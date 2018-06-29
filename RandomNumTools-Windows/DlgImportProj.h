@@ -3,6 +3,9 @@
 #include "AGButton.h"
 // CDlgImportProj dialog
 
+#include "AGListCtrl.h"
+class CProjDataInstance;
+
 class CDlgImportProj : public CDialogEx
 {
 	DECLARE_DYNAMIC(CDlgImportProj)
@@ -32,10 +35,15 @@ private:
 	CAGButton m_agBtnEdit;
 	CAGButton m_agBtnDelete;
 
+	CAGListCtrl m_ctrlAllData;
+
+	CProjDataInstance* m_pProjDataInstance;
+
 public:
 	afx_msg void OnBnClickedButtonNew();
 	afx_msg void OnBnClickedButtonEdit();
 	afx_msg void OnBnClickedButtonDelete();
 	afx_msg void OnBnClickedButtonSure();
 	afx_msg void OnBnClickedButtonCancel();
+	afx_msg void OnNMClickListProjData(NMHDR *pNMHDR, LRESULT *pResult);
 };

@@ -170,6 +170,11 @@ namespace CPlusBaluoteli
 		return "";
 	}
 
+	void CFileIO::resetFile(DWORD dwMoveMethod /*= FILE_BEGIN*/)
+	{
+
+	}
+
 	bool CFileIO::generatorFile(const std::string &path)
 	{
 		HANDLE fileHandle = CreateFile(CString(path.c_str()),
