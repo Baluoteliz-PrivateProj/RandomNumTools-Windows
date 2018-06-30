@@ -5,6 +5,62 @@ using namespace CPlusBaluoteli::util;
 using namespace CPlusBaluoteli::control;
 #include "ProjDataManager.h"
 
+CRandom::CRandom():
+m_nNumMin(0),
+m_nNumMax(0),
+m_bIsRandomOver(false)
+{
+}
+
+CRandom::CRandom(int nNumMin, int nNumMax):
+m_nNumMin(nNumMin),
+m_nNumMax(nNumMax),
+m_bIsRandomOver(false)
+{
+}
+
+CRandom::~CRandom()
+{
+	m_vecUsed.clear();
+	m_nNumMin = 0;
+	m_nNumMax = 0;
+}
+
+bool CRandom::random(int &nRandomNum)
+{
+	bool bRes = false;
+	if (!m_bIsRandomOver) {
+		do	{
+			srand(time(NULL));
+			nRandomNum = m_nNumMin + (rand() % (m_nNumMax - m_nNumMin + 1));
+			vecIt it = find(m_vecUsed.begin(), m_vecUsed.end(), nRandomNum);
+			if (m_vecUsed.end() == it) {
+				bRes = true;
+				m_vecUsed.push_back(nRandomNum);
+				if (m_vecUsed.size() == m_nNumMax)
+					m_bIsRandomOver = true;
+			}
+		} while (!bRes);
+	}
+
+	return bRes;
+}
+
+void CRandom::resetRandom(int nNumMin, int nNumMax)
+{
+	if (m_nNumMin != nNumMin || m_nNumMax != nNumMax) {
+
+		m_bIsRandomOver = false;
+		m_vecUsed.clear();
+		m_nNumMin = nNumMin;
+		m_nNumMax = nNumMax;
+	}
+}
+
+void CRandom::muteIndex(const int &nIndex)
+{
+	m_vecUsed.push_back(nIndex);
+}
 /*
  * className: CFileData
  * the class main designed for randomNum Tools.Mainly deal with Three Nums fiiles: ***.dat,mute.dat,designation.dat.
@@ -18,15 +74,16 @@ m_pFileMain(nullptr),
 m_pFileMute(nullptr),
 m_nFileMainLineCount(0),
 m_nFileMuteLineCount(0),
-m_nFileDesignationLineCount(0)
+m_nFileDesignationLineCount(0),
+m_errorType(error_FileData::error_NULL)
 {
 	m_strMainBuffer.clear();
 	m_strMuteBuffer.clear();
 	m_strDesignationBuffer.clear();
 
-	m_mapMainData.clear();
-	m_mapMuteData.clear();
-	m_mapDesignationData.clear();
+	m_vecDesignationData.clear();
+	m_vecMainData.clear();
+	m_vecMuteData.clear();
 
 	m_strMainFilePath.clear();
 	m_strMuteFilePath.clear();
@@ -42,9 +99,21 @@ m_nFileMuteLineCount(0),
 m_nFileDesignationLineCount(0),
 m_strMainFilePath(filepath1),
 m_strMuteFilePath(filepath2),
-m_strDesignationPath(filepath3)
+m_strDesignationPath(filepath3),
+m_errorType(error_FileData::error_NULL)
 {
+	m_strMainBuffer.clear();
+	m_strMuteBuffer.clear();
+	m_strDesignationBuffer.clear();
+
+	m_vecDesignationData.clear();
+	m_vecMainData.clear();
+	m_vecMuteData.clear();
+
 	loadFile();
+	dataCheckSelf();
+	m_randomMain.resetRandom(1,m_nFileMainLineCount);
+	m_randomSpecial.resetRandom(1, m_nFileDesignationLineCount);
 }
 
 CFileData::~CFileData()
@@ -52,17 +121,17 @@ CFileData::~CFileData()
 	unloadFile();
 }
 
-
 bool CFileData::resetMain()
 {
-	m_mapMainData.clear();
+	m_vecMainData.clear();
+
 	fclose(m_pFileMain);
 	m_pFileMain = nullptr;
 	m_strMainBuffer.clear();
 	m_nFileMainLineCount = 0;
 
 	if (NULL != (m_pFileMain = fopen(m_strMainFilePath.data(), "ab+"))) {
-		return readAllStrEx(m_pFileMain, m_mapMainData);
+		return readAllStrEx(eType_Main);
 	}
 
 	return false;
@@ -70,14 +139,14 @@ bool CFileData::resetMain()
 
 bool CFileData::resetMute()
 {
-	m_mapMuteData.clear();
+	m_vecMuteData.clear();
 	fclose(m_pFileMute);
 	m_pFileMute = nullptr;
 	m_strMuteBuffer.clear();
 	m_nFileMuteLineCount = 0;
 
 	if (NULL != (m_pFileMute = fopen(m_strMuteFilePath.data(), "ab+"))) {
-		return readAllStrEx(m_pFileMute, m_mapMuteData);
+		return readAllStrEx(eType_Mute);
 	}
 
 	return false;
@@ -85,14 +154,14 @@ bool CFileData::resetMute()
 
 bool CFileData::resetDesignation()
 {
-	m_mapDesignationData.clear();
+	m_vecDesignationData.clear();
 	fclose(m_pFileDesignation);
 	m_pFileDesignation = nullptr;
 	m_strDesignationBuffer.clear();
 	m_nFileDesignationLineCount = 0;
 
 	if (NULL != (m_pFileDesignation = fopen(m_strDesignationPath.data(), "ab+"))) {
-		return readAllStrEx(m_pFileDesignation, m_mapDesignationData);
+		return readAllStrEx(eType_Designation);
 	}
 
 	return false;
@@ -110,24 +179,37 @@ bool CFileData::resetAllData()
 
 BOOL CFileData::randomStr(std::string &strNum)
 {
-	int nNum = 0;
-	BOOL bRes = TRUE;
-	if (0 < m_nFileMainLineCount) {
+	if (m_errorType & error_Ok) {
 
-		if (1 == m_nFileMainLineCount)
-			int nNum = m_nFileMainLineCount;
-		else {
-			srand(NULL);
-			int nNum = 1 + MAKELONG(rand(), rand() % (m_nFileMainLineCount - 1));
+		int nNum = 0;
+		std::string strName;
+
+		{//random special data
+			m_randomSpecial.resetRandom(1,m_nFileDesignationLineCount);
+			if (m_randomSpecial.random(nNum)) {
+				strNum = m_vecDesignationData[nNum - 1];
+				vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), strNum);
+				int nIndexByMain = itMain - m_vecMainData.begin() + 1;
+				m_randomMain.muteIndex(nIndexByMain);
+				return m_errorType;
+			}
+		}
+
+		{//random from source file
+			int nRandomCount = 0;
+			m_randomMain.resetRandom(1, m_nFileMainLineCount);
+			do {
+				if (m_randomMain.random(nNum))
+						strNum = m_vecMainData[nNum - 1];
+					else{
+						m_errorType |= error_Random_Over;
+						break;
+					}
+			} while (m_vecMuteData.end() != find(m_vecMuteData.begin(), m_vecMuteData.end(), strNum) && (++nRandomCount) <= m_nFileMuteLineCount);
 		}
 	}
-	else
-		bRes = -1;//error .no valid num
 
-	strNum = CommonFun::int2str(nNum);
-	
-		
-	return ;
+	return m_errorType;
 }
 
 bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType_Main*/)
@@ -135,10 +217,14 @@ bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType
 	switch (eType)
 	{
 	case eFileType::eType_Main: {
-		m_nFileMainLineCount++;
-		m_mapMainData.insert(make_pair(m_nFileMainLineCount, str));
-		fseek(m_pFileMain, 0, SEEK_END);
-		return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMain);
+		vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), str);
+		if (m_vecMainData.end() == itMain) {
+
+			m_nFileMainLineCount++;
+			m_vecMainData.push_back(str);
+			fseek(m_pFileMain, 0, SEEK_END);
+			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMain);
+		}
 	}
 								break;
 	case eFileType::eType_Mute:
@@ -156,10 +242,14 @@ bool CFileData::mute(const std::string &str, eFileType eType /*= eFileType::eTyp
 	case eFileType::eType_Main:
 		break;
 	case eFileType::eType_Mute: {
-		m_nFileMuteLineCount++;
-		m_mapMuteData.insert(make_pair(m_nFileMuteLineCount, str));
-		fseek(m_pFileMute, 0, SEEK_END);
-		return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMute);
+		vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), str);
+		if (m_vecMuteData.end() != itMute) {
+
+			m_nFileMuteLineCount++;
+			m_vecMuteData.push_back(str);
+			fseek(m_pFileMute, 0, SEEK_END);
+			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMute);
+		}
 	}
 								break;;
 	case eFileType::eType_Designation:
@@ -175,12 +265,16 @@ bool CFileData::designation(const std::string &str, eFileType eType /*= eFileTyp
 	case eFileType::eType_Main:
 		break;
 	case eFileType::eType_Mute:
-		break;;
+		break;
 	case eFileType::eType_Designation: {
-		m_nFileDesignationLineCount++;
-		m_mapDesignationData.insert(make_pair(m_nFileDesignationLineCount, str));
-		fseek(m_pFileDesignation, 0, SEEK_END);
-		return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileDesignation);
+		vecStrIte itSpecial = find(m_vecDesignationData.begin(), m_vecDesignationData.end(), str);
+		if (m_vecDesignationData.end() != itSpecial) {
+
+			m_nFileDesignationLineCount++;
+			m_vecDesignationData.push_back(str);
+			fseek(m_pFileDesignation, 0, SEEK_END);
+			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileDesignation);
+		}
 	}
 									   break;
 	default:break;
@@ -194,9 +288,7 @@ bool CFileData::loadFile()
 	int nNumRead = 0; int nNumWritten = 0;
 	if (nullptr == m_pFileMain) {
 		if (nullptr != (m_pFileMain = fopen(m_strMainFilePath.data(), "ab+"))) {
-			//readAllStr(eFileType::eType_Main);
-			//m_nFileMainLineCount = getManiDataLines();
-			readAllStrEx(m_pFileMain, m_mapMainData);
+			readAllStrEx(eType_Main);
 		}
 		else
 			bReturn &= false;
@@ -204,8 +296,7 @@ bool CFileData::loadFile()
 
 	if (nullptr == m_pFileMute) {
 		if (nullptr != (m_pFileMute = fopen(m_strMuteFilePath.data(), "ab+"))) {
-			//readAllStr(eFileType::eType_Mute);
-			readAllStrEx(m_pFileMute, m_mapMuteData);
+			readAllStrEx(eType_Mute);
 		}
 		else
 			bReturn &= false;
@@ -213,8 +304,7 @@ bool CFileData::loadFile()
 
 	if (nullptr == m_pFileDesignation) {
 		if (nullptr != (m_pFileDesignation = fopen(m_strDesignationPath.data(), "ab+"))) {
-			//readAllStr(eFileType::eType_Designation);
-			readAllStrEx(m_pFileDesignation, m_mapDesignationData);
+			readAllStrEx(eType_Designation);
 		}
 		else
 			bReturn &= false;
@@ -225,19 +315,19 @@ bool CFileData::loadFile()
 
 void CFileData::unloadFile()
 {
-	m_mapMainData.clear();
+	m_vecMainData.clear();
 	if (m_pFileMain) {
 		fclose(m_pFileMain);
 		m_pFileMain = nullptr;
 	}
 
-	m_mapMuteData.clear();
+	m_vecMuteData.clear();
 	if (m_pFileMute) {
 		fclose(m_pFileMute);
 		m_pFileMute = nullptr;
 	}
 
-	m_mapDesignationData.clear();
+	m_vecDesignationData.clear();
 	if (m_pFileDesignation){
 		fclose(m_pFileDesignation);
 		m_pFileDesignation = nullptr;
@@ -298,8 +388,11 @@ inline int CFileData::readAllStr(eFileType type)
 	return nNumRead;
 }
 
-inline int CFileData::readAllStrEx(FILE* pFile, std::map<int, std::string> &m_mapData)
+inline int CFileData::readAllStrEx(eFileType eType)
 {
+	FILE* pFile = nullptr;
+	pFile = (eType==eType_Main ? (m_pFileMain):(eType == eType_Mute ? (m_pFileMute):(eType == eType_Designation?(m_pFileDesignation):(NULL))));
+
 	int nRet = 0;
 	std::string strName;
 	int nDataLines = 0;
@@ -315,9 +408,16 @@ inline int CFileData::readAllStrEx(FILE* pFile, std::map<int, std::string> &m_ma
 			if (ferror(pFile))
 				break;
 			if ('\n' == chread[0]) {
-				nDataLines++;
-				m_mapData.insert(make_pair(nDataLines, strName));
-				strName.clear();
+				if ("" != strName) {
+					nDataLines++;
+					if (eType_Main == eType)
+						m_vecMainData.push_back(strName);
+					else if (eType_Mute == eType)
+						m_vecMuteData.push_back(strName);
+					else if (eType_Designation == eType)
+						m_vecDesignationData.push_back(strName);
+					strName.clear();
+				}
 				continue;
 			}
 		}
@@ -325,9 +425,14 @@ inline int CFileData::readAllStrEx(FILE* pFile, std::map<int, std::string> &m_ma
 		strName += chread;
 	}
 
-	if (!strName.empty()) {
+	if (!strName.empty() && !strName.empty()) {
 		nDataLines++;
-		m_mapData.insert(make_pair(nDataLines, strName));
+		if (eType_Main == eType)
+			m_vecMainData.push_back(strName);
+		else if (eType_Mute == eType)
+			m_vecMuteData.push_back(strName);
+		else if (eType_Designation == eType)
+		m_vecDesignationData.push_back(strName);
 		strName.clear();
 	}
 	if (m_pFileMain == pFile)
@@ -338,6 +443,69 @@ inline int CFileData::readAllStrEx(FILE* pFile, std::map<int, std::string> &m_ma
 		m_nFileDesignationLineCount = nDataLines;
 
 	return nRet;
+}
+
+int CFileData::dataCheckSelf()
+{
+	m_errorType = error_NULL;
+	//error one:  specialed data is greater than source data.
+	if (0 == m_nFileMainLineCount)
+		m_errorType |= error_DataFile_Empty;
+
+	bool bFlage = true;
+	//Invalid data item in the specified file,the items not int the main files
+	if (0 < m_nFileMainLineCount) {
+		for (vecStrIte itSpecial = m_vecDesignationData.begin(); m_vecDesignationData.end() != itSpecial; itSpecial++) {
+
+			vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), *itSpecial);
+			if (m_vecMainData.end() == itMain) {
+				bFlage = false;
+				break;
+			}
+		}
+		if (!bFlage) {
+			m_errorType |= error_InValidItem_InSpecialFiles;
+		}
+	}
+
+	//all the data is mute in the mute files.
+	bFlage = true;
+	if (m_nFileMuteLineCount >= m_nFileMainLineCount && 0 < m_nFileMainLineCount) {
+		int nCount = 0;
+		for (vecStrIte itMain = m_vecMainData.begin(); m_vecMainData.end() != itMain; itMain++) {
+
+			vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), *itMain);
+			nCount++;
+			if (m_vecMuteData.end() == itMute)
+				break;
+		}
+		if (nCount == m_nFileMuteLineCount)
+			bFlage = false;
+
+		if (!bFlage)
+			m_errorType |= error_AllDataItemMuted;
+	}
+
+	bFlage = true;
+	//error two: the same data appears int the marked data and int the specialed data.
+	if (0 < m_nFileMainLineCount) {
+		for (vecStrIte itMute = m_vecMuteData.begin(); m_vecMuteData.end() != itMute; itMute++) {
+
+			vecStrIte itSpecial = find(m_vecDesignationData.begin(), m_vecDesignationData.end(), (*itMute));
+			if (m_vecDesignationData.end() != itSpecial) {
+				bFlage = false;
+				break;
+			}
+		}
+
+		if (!bFlage)
+			m_errorType |= error_SameItemConflict_MuteAndSpecial;
+	}
+
+	if (0 == m_errorType)
+		m_errorType |= error_Ok;
+
+	return m_errorType;
 }
 
 inline int CFileData::writeEndStr(eFileType type,const std::string &str)

@@ -55,6 +55,7 @@ using namespace Random;
 #pragma warning(disable:4996)
 #pragma warning(disable:4018)
 #pragma warning(disable:4995)
+#pragma warning(disable:4715)
 
 #ifdef _UNICODE
 #if defined _M_IX86

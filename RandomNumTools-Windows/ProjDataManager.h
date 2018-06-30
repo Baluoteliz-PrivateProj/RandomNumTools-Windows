@@ -2,6 +2,25 @@
 
 #include "Singleton.h"
 
+class CRandom{
+public:
+	CRandom();
+	CRandom(int nNumMin,int nNumMax);
+	~CRandom();
+
+	bool random(int &nRandomNum);
+	void resetRandom(int nNumMin,int nNumMax);
+	void muteIndex(const int &nIndex);
+
+private:
+	int m_nNumMin;
+	int m_nNumMax;
+
+	bool m_bIsRandomOver;
+	typedef std::vector<int>::iterator vecIt;
+	std::vector<int> m_vecUsed;
+};
+
 class CFileData
 {
 public:
@@ -18,11 +37,25 @@ public:
 		eType_UNKOWN = 0xff
 	};
 
+	enum error_FileData{
+		error_NULL = 0,
+		error_Ok = 1,
+		error_AllDataItemMuted = 2,//all data belong to mute data
+		error_SameItemConflict_MuteAndSpecial = 4,//the same item between mute data and designation data.
+		error_DataFile_Empty = 8,
+		error_InValidItem_InSpecialFiles = 16, //inivalid dataitme in designation.dat.
+		error_Random_Over = 32,
+
+		error_UnKnown = 0xff,
+	};
+
 	bool resetMain();
 	bool resetMute();
 	bool resetDesignation();
 	bool resetAllData();
 
+	int dataCheckSelf(); //data check self
+	
 	BOOL randomStr(std::string &strNum);
 	bool add(const std::string &str, eFileType eType = eFileType::eType_Main);
 	bool mute(const std::string &str, eFileType eType = eFileType::eType_Mute);
@@ -36,7 +69,40 @@ protected:
 	inline int writeEndStr(eFileType type, const std::string &str);
 	inline int getManiDataLines();
 	
-	inline int readAllStrEx(FILE* pFile,std::map<int,std::string> &m_mapData);
+	typedef struct etagStatus{
+		etagStatus(int nIndex, bool bstatus):
+			m_bstatus(bstatus),
+			m_nIndex(nIndex){
+		}
+		etagStatus():
+		m_bstatus(false),
+		m_nIndex(0){
+		}
+		bool m_bstatus;
+		int m_nIndex;
+	}STATUS, *PSTATUS, *LPSTATUS;
+
+	typedef struct etagLineInfo{
+		etagLineInfo() :
+			m_strText(""),
+			m_bStatus(false) {
+		}
+		etagLineInfo(const std::string &strText,const bool &bstatus):
+		m_strText(strText),
+		m_bStatus(bstatus) {
+		}
+		bool operator <(const etagLineInfo& lineinfo) const{
+			if (this != &lineinfo)
+				return m_strText < lineinfo.m_strText;
+		}
+		std::string m_strText;
+		int m_bStatus;
+	}LINEINFO,*PLINEINFO,*LPLINEINFO;
+	
+	typedef std::map<int,LINEINFO>::iterator iteratorMain;
+	typedef std::map<std::string, STATUS>::iterator iteratorSpecial;
+
+	inline int readAllStrEx(eFileType eType);
 
 private:
 
@@ -54,9 +120,18 @@ private:
 	std::string m_strMuteBuffer;
 	std::string m_strDesignationBuffer;
 
-	std::map<int /*nIndex*/, std::string /*strName*/> m_mapMainData;
-	std::map<int /*nIndex*/, std::string /*strName*/> m_mapMuteData;
-	std::map<int /*nIndex*/, std::string /*strName*/> m_mapDesignationData;
+// 	std::map<int /*nIndex*/, LINEINFO/*status*/> m_mapMainData;
+// 	std::map<std::string /*strName*/, STATUS /*status*/> m_mapMuteData;
+// 	std::map<std::string /*strName*/, STATUS /*status*/> m_mapDesignationData;
+
+	std::vector<std::string> m_vecMainData;
+	std::vector<std::string> m_vecMuteData;
+	std::vector<std::string> m_vecDesignationData;
+	typedef std::vector<std::string>::iterator vecStrIte;
+
+	CRandom m_randomSpecial;
+	CRandom m_randomMain;
+	int m_errorType;
 };
 
 class CProjData

@@ -189,8 +189,44 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 	fclose(pFile);
 #endif
 	
-#if 0
-	CFileData filedata("..\\data\\aaa\\11.dat", "..\\data\\aaa\\mute.dat", "..\\data\\aaa\\designation.dat");
+#if 1
+	CFileData filedata("..\\data\\aaa\\aaa.dat", "..\\data\\aaa\\mute.dat", "..\\data\\aaa\\designation.dat");
+	BOOL bres = filedata.dataCheckSelf();
+	char szbuf[MAX_PATH] = { '\0' };
+	std::string strName;
+	if (bres & CFileData::error_Ok) {
+
+		do{
+			static int nCount = 0;
+			DWORD dwStart = GetTickCount();
+			bres = filedata.randomStr(strName);
+			DWORD dwEnd = GetTickCount();
+			nCount++;
+			sprintf_s(szbuf, "[%d]: random str:%s,Interval: %d\n",nCount,strName.data(),dwEnd - dwStart);
+			if (bres == CFileData::error_Ok)
+				OutputDebugStringA(szbuf);
+		} while (bres == CFileData::error_Ok);
+	}
+	if (bres & CFileData::error_SameItemConflict_MuteAndSpecial){
+
+		sprintf_s(szbuf, "error_config_dataItem\n");
+		OutputDebugStringA(szbuf);
+	}
+	if (bres & CFileData::error_AllDataItemMuted) {
+
+		sprintf_s(szbuf, "error_invalidata\n");
+		OutputDebugStringA(szbuf);
+	}
+	if (bres & CFileData::error_DataFile_Empty) {
+
+		sprintf_s(szbuf, "error_dataFile_Empty\n");
+		OutputDebugStringA(szbuf);
+	}
+	if (bres & CFileData::error_InValidItem_InSpecialFiles) {
+
+		sprintf_s(szbuf, "error_InValidItem_InSpecialFiles\n");
+		OutputDebugStringA(szbuf);
+	}
 
 #endif
 
