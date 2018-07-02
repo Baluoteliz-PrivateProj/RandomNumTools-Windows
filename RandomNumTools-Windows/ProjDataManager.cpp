@@ -10,7 +10,8 @@ CRandom::CRandom():
 m_nNumMin(0),
 m_nNumMax(0),
 m_nItemCount(0),
-m_bIsRandomOver(false)
+m_bIsRandomOver(false),
+m_nNumRepeatLast(0)
 {
 }
 
@@ -18,7 +19,8 @@ CRandom::CRandom(int nNumMin, int nNumMax):
 m_nNumMin(nNumMin),
 m_nNumMax(nNumMax),
 m_nItemCount(0),
-m_bIsRandomOver(false)
+m_bIsRandomOver(false),
+m_nNumRepeatLast(0)
 {
 	m_nItemCount = m_nNumMax - m_nNumMin + 1;
 	for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
@@ -34,6 +36,7 @@ CRandom::~CRandom()
 	m_nNumMin = 0;
 	m_nNumMax = 0;
 	m_nItemCount = 0;
+	m_nNumRepeatLast = 0;
 }
 
 bool CRandom::random(int &nRandomNum)
@@ -63,9 +66,22 @@ bool CRandom::random(int &nRandomNum)
 bool CRandom::randomRepeatable(int &nRandomNum)
 {
 	if (m_nNumMax >= m_nNumMin) {
-		srand(time(NULL));
-		nRandomNum = m_nNumMin + (rand() % (m_nNumMax - m_nNumMin + 1));
+#if 0
+		do{
+			srand(time(NULL));
+			nRandomNum = m_nNumMin + (rand() % (m_nNumMax - m_nNumMin + 1));
+		} while (m_nNumRepeatLast == nRandomNum);
+		m_nNumRepeatLast = nRandomNum;
 		return true;
+#else
+
+		nRandomNum = m_nNumRepeatLast + 1;
+		if (nRandomNum > m_nNumMax)
+			nRandomNum = m_nNumMin;
+		m_nNumRepeatLast = nRandomNum;
+
+		return true;
+#endif
 	}
 
 	return false;
@@ -80,6 +96,7 @@ void CRandom::resetRandom(int nNumMin, int nNumMax)
 		m_nNumMin = nNumMin;
 		m_nNumMax = nNumMax;
 		m_nItemCount = m_nNumMax - m_nNumMin + 1;
+		m_nNumRepeatLast = 0;
 
 		for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
 			m_vecUsed.push_back(nIndex);
@@ -122,6 +139,7 @@ void CRandom::resetRandom()
 	m_bIsRandomOver = false;
 	m_vecUsed.clear();
 	m_nItemCount = m_nNumMax - m_nNumMin + 1;
+	m_nNumRepeatLast = 0;
 
 	for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
 		m_vecUsed.push_back(nIndex);
@@ -305,6 +323,8 @@ bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType
 		vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), str);
 		if (m_vecMainData.end() == itMain) {
 
+			if (m_errorType & error_Random_Over)
+				m_errorType &= ~error_Random_Over;
 			m_nFileMainLineCount++;
 			m_randomMain.addNum(m_nFileMainLineCount);
 			m_vecMainData.push_back(str); 
@@ -401,6 +421,7 @@ bool CFileData::designation(const std::string &str, eFileType eType /*= eFileTyp
 		if (m_vecDesignationData.end() == itSpecial) {
 
 			m_nFileDesignationLineCount++;
+			m_randomSpecial.addNum(m_nFileDesignationLineCount);
 			m_vecDesignationData.push_back(str);
 			int nres = fseek(m_pFileDesignation, 0, SEEK_END); 
 			std::string strWritten = str + "\r\n";

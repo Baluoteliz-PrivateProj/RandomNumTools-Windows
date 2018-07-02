@@ -91,6 +91,8 @@ namespace CPlusBaluoteli
 #define INI_BaseInfo_TitleName									"TitleName"
 #define INI_BaseInfo_TagName									"TagName"
 #define INI_BaseInfo_ImportFileDirPrefix						"ImportDirPrefix"
+#define INI_BaseInfo_RandomInterval							"RandomInterval"
+#define INI_BaseInfo_ChooseInterval							"ChooseInterval"
 
 	class CConfig :public CIniBase
 	{
@@ -104,6 +106,8 @@ namespace CPlusBaluoteli
 		__DECLARE_INICONFIG_FUN(TitleName)
 		__DECLARE_INICONFIG_FUN(TagName)
 		__DECLARE_INICONFIG_FUN(ImportDirPrefix)
+		__DECLARE_INICONFIG_FUN(RandomInterval)
+		__DECLARE_INICONFIG_FUN(ChooseInterval)
 
 	private:
 

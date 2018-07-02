@@ -108,9 +108,11 @@
     <ClInclude Include="AGListCtrl.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="DlgConfig.h" />
+    <ClInclude Include="DlgFullScreenTextSpeech.h" />
     <ClInclude Include="DlgImportEdit.h" />
     <ClInclude Include="DlgImportNew.h" />
     <ClInclude Include="DlgImportProj.h" />
+    <ClInclude Include="DlgSpeeckTextRender.h" />
     <ClInclude Include="FileIO.h" />
     <ClInclude Include="ProjDataManager.h" />
     <ClInclude Include="RandomNumTools-Windows.h" />
@@ -129,9 +131,11 @@
     <ClCompile Include="AGHyperLink.cpp" />
     <ClCompile Include="AGListCtrl.cpp" />
     <ClCompile Include="DlgConfig.cpp" />
+    <ClCompile Include="DlgFullScreenTextSpeech.cpp" />
     <ClCompile Include="DlgImportEdit.cpp" />
     <ClCompile Include="DlgImportNew.cpp" />
     <ClCompile Include="DlgImportProj.cpp" />
+    <ClCompile Include="DlgSpeeckTextRender.cpp" />
     <ClCompile Include="FileIO.cpp" />
     <ClCompile Include="ProjDataManager.cpp" />
     <ClCompile Include="RandomNumTools-Windows.cpp" />
@@ -149,10 +153,14 @@
     <None Include="res\RandomNumToolsWindows.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\bitmap1.bmp" />
     <Image Include="res\FirstLogin.bmp" />
+    <Image Include="res\FullScreenTextSpeech.bmp" />
+    <Image Include="res\FullScreenTextSpeech1.bmp" />
     <Image Include="res\IDB_BTNCLOSE.bmp" />
     <Image Include="res\IDB_BTNMIN.bmp" />
     <Image Include="res\IDB_DLG_PARAM.bmp" />
+    <Image Include="res\MainTextRender.bmp" />
     <Image Include="res\RandomNumTools-Windows.ico" />
     <Image Include="res\Start.bmp" />
   </ItemGroup>

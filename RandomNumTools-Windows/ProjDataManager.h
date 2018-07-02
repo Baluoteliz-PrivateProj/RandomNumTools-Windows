@@ -31,6 +31,8 @@ private:
 
 	bool m_bIsRandomOver;
 	std::vector<int> m_vecUsed;
+
+	int m_nNumRepeatLast;
 };
 
 class CFileData

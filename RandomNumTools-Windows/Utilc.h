@@ -5,6 +5,7 @@
 #pragma comment(lib,"Ws2_32.lib")
 #include <vector>
 #include <time.h>
+#include <assert.h>
 
 namespace CPlusBaluoteli
 {
@@ -176,6 +177,15 @@ namespace CPlusBaluoteli
 				CString timeStr;
 				timeStr.Format(_T("%d%02d%02d-%02d%02d%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
 				return CommonFun::cs2s(timeStr);
+			}
+
+			static CString PASCAL getTimeStr()
+			{
+				SYSTEMTIME st = { 0 };
+				GetLocalTime(&st);
+				CString timeStr;
+				timeStr.Format(_T("%d%02d%02d-%02d%02d%02d"), st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				return timeStr;
 			}
 
 			static DWORD PASCAL getProcessID(const std::string &processName)

@@ -9,6 +9,7 @@
 #include "TTSWrapper.h"
 
 class CProjDataInstance;
+class CDlgSpeeckTextRender;
 // CRandomNumToolsWindowsDlg dialog
 class CRandomNumToolsWindowsDlg : public CDialogEx
 {
@@ -60,9 +61,7 @@ protected:
 
 	afx_msg LRESULT OnImportFile(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnDeleteFile(WPARAM wParam, LPARAM lParam);
-
-	inline void playSoundBk();
-	inline void playSoundHit();
+	afx_msg LRESULT OnFullScreenSpeech(WPARAM wParam,LPARAM lParam);
 
 	static UINT ThreadTTSProc(LPVOID param);
 
@@ -98,4 +97,6 @@ private:
 	CString m_StrHitName;
 	CWinThread* m_pThreadTTS;
 	CProjDataInstance* m_pProjInstance;
+
+	CDlgSpeeckTextRender* m_pMainTextSpeechRender;
 };

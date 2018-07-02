@@ -1,5 +1,7 @@
 #pragma once
 #include <tchar.h>
+#include <mmsystem.h>
+#pragma comment( lib, "Winmm.lib" )
 
 namespace Random {
 
@@ -33,6 +35,8 @@ namespace Random {
 	const TCHAR* const KERROR_SameItemConflict_MuteAndSpecial = _T("屏蔽和指定文件中出现了相同元素的数据");
 	const TCHAR* const KERROR_NoValidProj = _T("不存在这个项目的数据");
 
+	const TCHAR* const KOperatorNote = _T("操作提示 空格-开始/确定  ESC-退出全屏");
+
 	const TCHAR* const KFileNameMute = _T("mute.dat");
 	const TCHAR* const KFileNameDesignation = _T("designation.dat");
 
@@ -63,14 +67,50 @@ namespace Random {
 		int nRes;
 	}RANDOM_DELETE_PROJ, *PRANDOM_DELETE_PROJ, *LPRANDOM_DELETE_PROJ;
 
+	typedef struct eTagRandom_FULLSCREEN_SPEECK{
+		CString strSpeechText;
+	}RANDOM_FULLSCREEN_SPEECH,*PRANDOM_FULLSCREEN_SPEECH,*LPRANDOM_FULLSCREEN_SPEECH;
+
+	typedef struct eTagRandom_FULLSCREEN_SHOWRESULT{
+		int nIndex;
+		CString strData;
+		CString strResult;
+	}Random_FULLSCREEN_SHOWRESULT, *PRandom_FULLSCREEN_SHOWRESULT, *LPRandom_FULLSCREEN_SHOWRESULT;
+
 	enum eTagRandomMsg
 	{
 		RandomMsg_NULL = WM_USER,
 		RandomMsg_UPDATA_LISTCTRL,
 		RandomMsg_IMPORT_PROJ,
 		RandomMsg_DELETE_PROJ,
+		RandomMsg_FULLSCREEN_SPEECH,
 
 
 		Random_KNOWN = WM_USER +0xff,
+	};
+
+
+	enum eTagEventRender
+	{
+		Event_Main_Start = 1,
+		Event_Main_Choose = 2,
+		Event_FulllScreen_Start = 3,
+		Event_FullScreen_Choose = 4,
+
+	};
+
+	struct SoundControl{
+
+		static void PASCAL playSoundBk()
+		{
+			PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+			PlaySound(_T("..\\Sounds\\Working.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+		}
+
+		static void PASCAL playSoundHit()
+		{
+			PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+			PlaySound(_T("..\\Sounds\\OK.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
 	};
 }

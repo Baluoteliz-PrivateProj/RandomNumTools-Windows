@@ -29,8 +29,10 @@ protected:
 	
 private:
 	CEdit m_editVendorName;
+	CSliderCtrl m_sliderCtrl;
 
 public:
 	afx_msg void OnBnClickedButtonSave();
 	afx_msg void OnBnClickedButtonCancle();
+	afx_msg void OnNMCustomdrawSliderRandominterval(NMHDR *pNMHDR, LRESULT *pResult);
 };

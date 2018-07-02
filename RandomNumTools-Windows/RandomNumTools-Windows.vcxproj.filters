@@ -87,6 +87,12 @@
     <ClInclude Include="DlgImportEdit.h">
       <Filter>Dlg</Filter>
     </ClInclude>
+    <ClInclude Include="DlgSpeeckTextRender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgFullScreenTextSpeech.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
@@ -134,6 +140,12 @@
     <ClCompile Include="DlgImportEdit.cpp">
       <Filter>Dlg</Filter>
     </ClCompile>
+    <ClCompile Include="DlgSpeeckTextRender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgFullScreenTextSpeech.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RandomNumTools-Windows.rc">
@@ -162,6 +174,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\IDB_DLG_PARAM.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\FullScreenTextSpeech.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MainTextRender.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\FullScreenTextSpeech1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

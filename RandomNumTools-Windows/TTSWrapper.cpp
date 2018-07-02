@@ -269,21 +269,10 @@ UINT CTTSInstance::ThreadTTSProc1(LPVOID param)
 CSingleton<CTTSInstance>::CGrabo CTTSInstance::graboInstance;
 CTTSInstance::CTTSInstance()
 {
-	initTTS();
 }
 
 CTTSInstance::~CTTSInstance()
 {
-	m_bResume = TRUE;
-	DWORD dwRet = 0;
-	do
-	{
-		Sleep(100);
-		dwRet = m_pTTSThread->ResumeThread();
-		CFormatStr::Baluoteliz_WriteLog("ResumeThread Return: %d;  m_bResume: %d\n", dwRet, m_bResume);
-	} while (1 != dwRet);
-
-	uninitTTS();
 }
 
 inline void CTTSInstance::initTTS()

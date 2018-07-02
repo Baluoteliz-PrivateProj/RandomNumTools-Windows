@@ -26,6 +26,7 @@ void CDlgConfig::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_VENDORNAME, m_editVendorName);
+	DDX_Control(pDX, IDC_SLIDER_RandomInterval, m_sliderCtrl);
 }
 
 
@@ -34,6 +35,7 @@ BEGIN_MESSAGE_MAP(CDlgConfig, CDialogEx)
 	ON_WM_SHOWWINDOW()
 	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CDlgConfig::OnBnClickedButtonSave)
 	ON_BN_CLICKED(IDC_BUTTON_CANCLE, &CDlgConfig::OnBnClickedButtonCancle)
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_SLIDER_RandomInterval, &CDlgConfig::OnNMCustomdrawSliderRandominterval)
 END_MESSAGE_MAP()
 
 
@@ -67,6 +69,10 @@ inline void CDlgConfig::initCtrl()
 	int nPosX = rtParent.left + rtParent.Width() / 2 - rtConfig.Width() / 2;
 	int nPosY = rtParent.top + rtParent.Height() / 2 - rtConfig.Height() / 2;
 	MoveWindow(nPosX, nPosY, rtConfig.Width(), rtConfig.Height(), TRUE);
+
+	m_sliderCtrl.SetRange(1, 50);
+	DWORD dwRandomInterval = util::CommonFun::str2int(gConfig.getRandomInterval());
+	m_sliderCtrl.SetPos(dwRandomInterval * 50 / 1000);
 	
 	CMFCButton::EnableWindowsTheming(FALSE);
 }
@@ -105,4 +111,20 @@ void CDlgConfig::OnBnClickedButtonCancle()
 void CDlgConfig::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	int i = 0;
+}
+
+void CDlgConfig::OnNMCustomdrawSliderRandominterval(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	*pResult = 0;
+
+	DWORD dwTimeInterval = 0;
+	int nPos = m_sliderCtrl.GetPos();
+	if (nPos == 50)
+		dwTimeInterval = 1000;
+	else
+		dwTimeInterval = (nPos % 50) * 100;
+
+	gConfig.setRandomInterval(util::CommonFun::int2str(dwTimeInterval));
 }

@@ -11,6 +11,8 @@ using namespace CPlusBaluoteli::util;
 using namespace CPlusBaluoteli::control;
 using namespace CPlusBaluoteli::FormatStr;
 #include "RandomNumTools-WindowsDlg.h"
+#include "DlgSpeeckTextRender.h"
+#include "DlgFullScreenTextSpeech.h"
 
 #include "DlgConfig.h"
 #include "DlgImportProj.h"
@@ -90,7 +92,8 @@ CRandomNumToolsWindowsDlg::CRandomNumToolsWindowsDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CRandomNumToolsWindowsDlg::IDD, pParent),
 	m_pThreadTTS(NULL)
 	, m_bResume(FALSE)
-	, m_pProjInstance(nullptr)
+	, m_pProjInstance(nullptr),
+	m_pMainTextSpeechRender(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -132,6 +135,7 @@ BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SURE, &CRandomNumToolsWindowsDlg::OnBnClickedButtonSure)
 	ON_MESSAGE(RandomMsg_IMPORT_PROJ, OnImportFile)
 	ON_MESSAGE(RandomMsg_DELETE_PROJ,OnDeleteFile)
+	ON_MESSAGE(RandomMsg_FULLSCREEN_SPEECH, OnFullScreenSpeech)
 END_MESSAGE_MAP()
 
 
@@ -317,17 +321,27 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	gConfig.setTagName("V1.0.0,Build100,2018/06/25,V1.0.0  @baluoteliz@gmail.com All Right Reserverd");
 	gConfig.setTitleName("上海兆言网络科技有限公司");
 	gConfig.setImportDirPrefix("C:\\");
-	gConfig.setVendorName("上海智慧树");
 
-	m_strVendorTitle = _T("上海兆言网络科技有限公司");
-	m_strVersionTag = _T("V1.0.0,Build100,2018/06/25,V1.0.0  @baluoteliz@gmail.com All Right Reserverd");
+	m_strVersionTag = CommonFun::s2cs(gConfig.getTagName());
+	m_strVendorTitle = CommonFun::s2cs(gConfig.getVendorName());
+	if (L"" == m_strVendorTitle)
+		FormatStr::CFormatStr::Baluoteliz_MessageBox(L"点击配置按钮, 配置基本信息");
 
 	CMFCButton::EnableWindowsTheming(FALSE);
+
+	if (nullptr == m_pMainTextSpeechRender) {
+		m_pMainTextSpeechRender = new CDlgSpeeckTextRender(this);
+		m_pMainTextSpeechRender->Create(CDlgSpeeckTextRender::IDD, this);
+		m_pMainTextSpeechRender->ShowWindow(SW_SHOW);
+	}
 }
 
 inline void CRandomNumToolsWindowsDlg::uninitCtrl()
 {
-
+	if (m_pMainTextSpeechRender) {
+		delete m_pMainTextSpeechRender;
+		m_pMainTextSpeechRender = nullptr;
+	}
 }
 
 inline void CRandomNumToolsWindowsDlg::initTTS()
@@ -346,9 +360,11 @@ inline void CRandomNumToolsWindowsDlg::initTTS()
 	m_TtsWrapper.SetRate(0);
 	m_TtsWrapper.SetVolume(100);
 
+#ifdef TTS_OLD
 	//SetTimer(1, 1000, nullptr);
 	AFX_THREADPROC threadTTsProc = ThreadTTSProc;
 	m_pThreadTTS = AfxBeginThread(threadTTsProc, this);
+#endif
 }
 
 inline void CRandomNumToolsWindowsDlg::uninitTTS()
@@ -405,18 +421,6 @@ inline void CRandomNumToolsWindowsDlg::DrawClient(CDC *pDC)
 	pDC->TextOut(rtClient.Width() / 2 - 250, rtClient.Height() - 21, m_strVersionTag, _tcslen(m_strVersionTag));
 	
 	pDC->SelectObject(defFont);
-}
-
-inline void CRandomNumToolsWindowsDlg::playSoundBk()
-{
-	PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-	PlaySound(_T("..\\Sounds\\Working.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-}
-
-inline void CRandomNumToolsWindowsDlg::playSoundHit()
-{
-	PlaySound(NULL, NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-	PlaySound(_T("..\\Sounds\\OK.wav"), NULL, SND_FILENAME | SND_ASYNC);
 }
 
 void CRandomNumToolsWindowsDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -500,6 +504,10 @@ void CRandomNumToolsWindowsDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	m_btnClose.SetBackColor(RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233));
 	m_btnClose.SetBorderColor(RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233));
 	m_btnClose.SetBackImage(IDB_BITMAP_CLOSE, RGB(0xFF, 0x00, 0xFF));
+
+	if (m_pMainTextSpeechRender){
+		m_pMainTextSpeechRender->MoveWindow(rt.left + 344, rt.top + 72, 479, 393, TRUE);
+	}
 }
 
 void CRandomNumToolsWindowsDlg::OnTimer(UINT_PTR nIDEvent)
@@ -565,6 +573,17 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonFullscreen()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+
+	CDlgFullScreenTextSpeech dlgFullScreenText;
+	INT_PTR nResponse =  dlgFullScreenText.DoModal();
+	if (IDOK == nResponse){
+
+	}
+	else if(IDCANCEL == nResponse){
+
+	}
+
+	int i = 0;
 }
 
 
@@ -629,42 +648,52 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonStart()
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
-	if (m_pProjInstance)
-		if (m_pProjInstance->RandomStr(m_StrHitName)){
+	if (m_pProjInstance){
 
-			m_btnStart.EnableWindow(FALSE);
-			m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
-			playSoundBk();
-			m_btnSure.EnableWindow(TRUE);
-			m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
-			m_btnSure.Invalidate(TRUE);
-			m_btnStart.Invalidate(TRUE);
+		m_btnStart.EnableWindow(FALSE);
+		m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
+		SoundControl::playSoundBk();
+		m_btnSure.EnableWindow(TRUE);
+		m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
+		m_btnSure.Invalidate(TRUE);
+		m_btnStart.Invalidate(TRUE);
+
+		if (m_pMainTextSpeechRender){
+			m_pMainTextSpeechRender->btnRandom();
 		}
-		else
-			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"项目数据为空 或者 所有数据都已经随机出现过了.");
+	}
 }
-
 
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+	
+	if (m_pProjInstance && m_pProjInstance->RandomStr(m_StrHitName)) {
+		m_btnSure.EnableWindow(FALSE);
+		m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
+		SoundControl::playSoundHit();
+		m_btnStart.EnableWindow(TRUE);
+		m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
+		m_btnSure.Invalidate(TRUE);
+		m_btnStart.Invalidate(TRUE);
 
-	m_btnSure.EnableWindow(FALSE);
-	m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
-	playSoundHit();
-	m_btnStart.EnableWindow(TRUE);
-	m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
-	m_btnSure.Invalidate(TRUE);
-	m_btnStart.Invalidate(TRUE);
+		if (m_pMainTextSpeechRender)
+			m_pMainTextSpeechRender->btnChoose(m_StrHitName);
 
-	m_pThreadTTS->ResumeThread();
+#ifdef TTS_OLD
+		m_pThreadTTS->ResumeThread();
+#endif
+	}
+	else
+		CFormatStr::Baluoteliz_MessageBox(L"项目数据为空，或者 所有的数据都已经随机出现过了");
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
 {
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
+#ifdef TTS_OLD
 	KillTimer(1);
 	m_bResume = TRUE;
 	DWORD dwRet = 0;
@@ -674,6 +703,7 @@ void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
 		dwRet = m_pThreadTTS->ResumeThread();
 		CFormatStr::Baluoteliz_WriteLog("ResumeThread Return: %d;  m_bResume: %d\n", dwRet,m_bResume);
 	} while ( 1 != dwRet);
+#endif
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnMin()
@@ -695,6 +725,7 @@ LRESULT CRandomNumToolsWindowsDlg::OnImportFile(WPARAM wParam, LPARAM lParam)
 		m_btnMute.EnableWindow(TRUE);
 		m_btnDesign.EnableWindow(TRUE);
 		m_btnStart.EnableWindow(TRUE);
+		//m_btnFullScreen.EnableWindow(TRUE);
 
 		Invalidate(TRUE);
 
@@ -720,6 +751,20 @@ LRESULT CRandomNumToolsWindowsDlg::OnDeleteFile(WPARAM wParam, LPARAM lParam)
 
 			delete lpData; lpData = nullptr;
 		}
+	}
+
+	return TRUE;
+}
+
+LRESULT CRandomNumToolsWindowsDlg::OnFullScreenSpeech(WPARAM wParam, LPARAM lParam)
+{
+	LPRANDOM_FULLSCREEN_SPEECH lpDatat = (LPRANDOM_FULLSCREEN_SPEECH)wParam;
+	if (lpDatat) {
+
+		m_StrHitName = lpDatat->strSpeechText;
+		m_pThreadTTS->ResumeThread();
+
+		delete lpDatat; lpDatat = nullptr;
 	}
 
 	return TRUE;

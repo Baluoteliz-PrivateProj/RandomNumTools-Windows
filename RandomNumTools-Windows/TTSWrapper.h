@@ -59,7 +59,7 @@ protected:
 	BOOL m_bComInit;
 };
 
-
+#define TTS_OLD
 class CTTSInstance :public CSingleton<CTTSInstance>
 {
 public:
