@@ -23,6 +23,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg LRESULT OnNcHitTest(CPoint point);
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnPaint();
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -31,19 +32,25 @@ protected:
 
 private:
 
+	CFont       m_ftTag;
+
 	CAGButton m_agBtnNew;
 	CAGButton m_agBtnEdit;
 	CAGButton m_agBtnDelete;
+	CButton m_btnImport;
 
 	CAGListCtrl m_ctrlAllData;
 
 	CProjDataInstance* m_pProjDataInstance;
+	CString m_strSelectItemText;
 
+	int m_nSelectItem;
 public:
 	afx_msg void OnBnClickedButtonNew();
 	afx_msg void OnBnClickedButtonEdit();
 	afx_msg void OnBnClickedButtonDelete();
 	afx_msg void OnBnClickedButtonSure();
 	afx_msg void OnBnClickedButtonCancel();
-	afx_msg void OnNMClickListProjData(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMDBlickListProjData(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg LRESULT OnUpdataListCtrl(WPARAM wParam, LPARAM lParam);
 };

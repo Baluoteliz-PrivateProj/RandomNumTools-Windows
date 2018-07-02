@@ -81,7 +81,8 @@ void CAGListCtrl::DrawItem(LPDRAWITEMSTRUCT lpMeasureItemStruct)
 				continue;
 			szText = GetItemText(lpMeasureItemStruct->itemID, i);
 			rcItem.left += 5; rcItem.right -= 1;
-			pDC->DrawText(szText, lstrlen(szText), &rcItem, DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
+			rcItem.top += 20;
+			pDC->DrawText(szText, lstrlen(szText), &rcItem, DT_LEFT  | DT_CENTER | DT_NOPREFIX | DT_SINGLELINE);
 		}
 	}
 

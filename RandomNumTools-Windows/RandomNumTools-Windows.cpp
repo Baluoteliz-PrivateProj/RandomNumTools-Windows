@@ -4,9 +4,10 @@
 
 #include "stdafx.h"
 #include "RandomNumTools-Windows.h"
-#include "RandomNumTools-WindowsDlg.h"
 #include "Utilc.h"
 using namespace CPlusBaluoteli;
+using namespace CPlusBaluoteli::control;
+#include "RandomNumTools-WindowsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

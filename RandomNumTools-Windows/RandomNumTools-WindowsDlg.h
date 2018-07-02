@@ -8,6 +8,7 @@
 #include "AGComboBox.h"
 #include "TTSWrapper.h"
 
+class CProjDataInstance;
 // CRandomNumToolsWindowsDlg dialog
 class CRandomNumToolsWindowsDlg : public CDialogEx
 {
@@ -57,6 +58,9 @@ protected:
 	afx_msg void OnBnClickedButtonStart();
 	afx_msg void OnBnClickedButtonSure();
 
+	afx_msg LRESULT OnImportFile(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT OnDeleteFile(WPARAM wParam, LPARAM lParam);
+
 	inline void playSoundBk();
 	inline void playSoundHit();
 
@@ -87,9 +91,11 @@ private:
 
 	CString m_strVendorTitle;
 	CString m_strVersionTag;
+	CString m_strImprtProjName;
 
 	CTTSWrapper m_TtsWrapper;
 	BOOL m_bResume;
 	CString m_StrHitName;
 	CWinThread* m_pThreadTTS;
+	CProjDataInstance* m_pProjInstance;
 };

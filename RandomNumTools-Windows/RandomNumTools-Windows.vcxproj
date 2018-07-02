@@ -104,6 +104,7 @@
     <ClInclude Include="AGButton.h" />
     <ClInclude Include="AGComboBox.h" />
     <ClInclude Include="AGEdit.h" />
+    <ClInclude Include="AGHyperLink.h" />
     <ClInclude Include="AGListCtrl.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="DlgConfig.h" />
@@ -125,6 +126,7 @@
     <ClCompile Include="AGButton.cpp" />
     <ClCompile Include="AGComboBox.cpp" />
     <ClCompile Include="AGEdit.cpp" />
+    <ClCompile Include="AGHyperLink.cpp" />
     <ClCompile Include="AGListCtrl.cpp" />
     <ClCompile Include="DlgConfig.cpp" />
     <ClCompile Include="DlgImportEdit.cpp" />

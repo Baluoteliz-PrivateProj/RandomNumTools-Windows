@@ -73,6 +73,13 @@ namespace CPlusBaluoteli
 				return str;
 			}
 
+			static CString PASCAL int2CS(int nNum)
+			{
+				char str[MAX_PATH] = { 0 };
+				_itoa_s(nNum, str, 10);
+				return CString(str);
+			}
+
 			static std::string PASCAL float2str(float fValue)
 			{
 				char str[MAX_PATH] = { 0 };

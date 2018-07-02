@@ -72,9 +72,6 @@
     <ClInclude Include="DlgImportNew.h">
       <Filter>Dlg</Filter>
     </ClInclude>
-    <ClInclude Include="DlgImportEdit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProjDataManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -83,6 +80,12 @@
     </ClInclude>
     <ClInclude Include="AGListCtrl.h">
       <Filter>Ctrl</Filter>
+    </ClInclude>
+    <ClInclude Include="AGHyperLink.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgImportEdit.h">
+      <Filter>Dlg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -116,17 +119,20 @@
     <ClCompile Include="RandomNumTools-WindowsDlg.cpp">
       <Filter>Dlg</Filter>
     </ClCompile>
-    <ClCompile Include="DlgImportNew.cpp">
-      <Filter>Dlg</Filter>
-    </ClCompile>
-    <ClCompile Include="DlgImportEdit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ProjDataManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AGListCtrl.cpp">
       <Filter>Ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="AGHyperLink.cpp">
+      <Filter>Ctrl</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgImportNew.cpp">
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgImportEdit.cpp">
+      <Filter>Dlg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

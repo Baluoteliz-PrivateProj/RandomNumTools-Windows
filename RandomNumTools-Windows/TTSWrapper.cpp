@@ -1,4 +1,9 @@
 #include "stdafx.h"
+#include "Utilc.h"
+using namespace CPlusBaluoteli;
+using namespace CPlusBaluoteli::util;
+using namespace CPlusBaluoteli::FormatStr;
+using namespace CPlusBaluoteli::control;
 #include "TTSWrapper.h"
 
 CTTSWrapper::CTTSWrapper(void)
@@ -217,6 +222,7 @@ int CTTSWrapper::Pause()
 
 	return 0;
 }
+
 //¼ÌÐøÀÊ¶Á  
 int CTTSWrapper::Resume()
 {
@@ -226,4 +232,92 @@ int CTTSWrapper::Resume()
 	}
 
 	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+UINT CTTSInstance::ThreadTTSProc1(LPVOID param)
+{
+	CTTSInstance* pVoid = (CTTSInstance*)param;
+	while (!pVoid->m_bResume){
+
+		if (_T("") != pVoid->m_StrHitName) {
+
+			DWORD dwStart = GetTickCount();
+			TCHAR szbuf[MAX_PATH] = { '\0' };
+			swprintf_s(szbuf, _T("%s,%s,%d\n"), L"ThreadTTSProc1", (pVoid->m_StrHitName), GetTickCount());
+			OutputDebugStringW(szbuf);
+
+			pVoid->m_TtsWrapper.Speak(pVoid->m_StrHitName);
+			DWORD dwEnd = GetTickCount();
+			DWORD dwInterval = dwEnd - dwStart;
+
+			//pVoid->m_StrHitName = _T("");
+		}
+
+		//Sleep(500);
+		pVoid->m_pTTSThread->SuspendThread();
+	}
+
+	CFormatStr::Baluoteliz_WriteLog("ThreadProc Exit m_bResume: %d\n", pVoid->m_bResume);
+
+	return 0;
+	return TRUE;
+}
+
+CSingleton<CTTSInstance>::CGrabo CTTSInstance::graboInstance;
+CTTSInstance::CTTSInstance()
+{
+	initTTS();
+}
+
+CTTSInstance::~CTTSInstance()
+{
+	m_bResume = TRUE;
+	DWORD dwRet = 0;
+	do
+	{
+		Sleep(100);
+		dwRet = m_pTTSThread->ResumeThread();
+		CFormatStr::Baluoteliz_WriteLog("ResumeThread Return: %d;  m_bResume: %d\n", dwRet, m_bResume);
+	} while (1 != dwRet);
+
+	uninitTTS();
+}
+
+inline void CTTSInstance::initTTS()
+{
+	m_TtsWrapper.Init();
+
+	CString arrayVoicePackageName[50];
+	int nVoicePackageCount = 50;
+
+	int nCount = m_TtsWrapper.EnumAudioToken(arrayVoicePackageName, nVoicePackageCount);
+	m_TtsWrapper.CreateSpVoice();
+	ISpObjectToken* ppToken = nullptr;
+
+	m_TtsWrapper.GetVoice(0, &ppToken);
+	m_TtsWrapper.SetVoice(ppToken);
+	m_TtsWrapper.SetRate(0);
+	m_TtsWrapper.SetVolume(100);
+
+	m_pTTSThread = AfxBeginThread((AFX_THREADPROC)ThreadTTSProc1, this);
+}
+
+inline void CTTSInstance::uninitTTS()
+{
+	DWORD dwExitCode = 0;
+	if (0 != GetExitCodeThread(m_pTTSThread->m_hThread, &dwExitCode)) {
+
+		AfxEndThread(dwExitCode);
+	}
+
+	m_TtsWrapper.DeleteSpVoice();
+	m_TtsWrapper.UnInit();
+}
+
+int CTTSInstance::speak(CString strContent, DWORD dwFlags /*= SPF_DEFAULT*/)
+{
+	return m_pTTSThread->ResumeThread();
 }

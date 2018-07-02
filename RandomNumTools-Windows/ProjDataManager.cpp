@@ -4,10 +4,12 @@ using namespace CPlusBaluoteli;
 using namespace CPlusBaluoteli::util;
 using namespace CPlusBaluoteli::control;
 #include "ProjDataManager.h"
+#include "RandomNumTools-Windows.h"
 
 CRandom::CRandom():
 m_nNumMin(0),
 m_nNumMax(0),
+m_nItemCount(0),
 m_bIsRandomOver(false)
 {
 }
@@ -15,8 +17,15 @@ m_bIsRandomOver(false)
 CRandom::CRandom(int nNumMin, int nNumMax):
 m_nNumMin(nNumMin),
 m_nNumMax(nNumMax),
+m_nItemCount(0),
 m_bIsRandomOver(false)
 {
+	m_nItemCount = m_nNumMax - m_nNumMin + 1;
+	for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
+		m_vecUsed.push_back(nIndex);
+
+	if (m_nNumMax < m_nNumMin)
+		m_bIsRandomOver = true;//empty_filedata
 }
 
 CRandom::~CRandom()
@@ -24,6 +33,7 @@ CRandom::~CRandom()
 	m_vecUsed.clear();
 	m_nNumMin = 0;
 	m_nNumMax = 0;
+	m_nItemCount = 0;
 }
 
 bool CRandom::random(int &nRandomNum)
@@ -31,19 +41,34 @@ bool CRandom::random(int &nRandomNum)
 	bool bRes = false;
 	if (!m_bIsRandomOver) {
 		do	{
+			int nNumMin = 0;
+			int nNumMax = m_nItemCount - 1;
 			srand(time(NULL));
-			nRandomNum = m_nNumMin + (rand() % (m_nNumMax - m_nNumMin + 1));
-			vecIt it = find(m_vecUsed.begin(), m_vecUsed.end(), nRandomNum);
-			if (m_vecUsed.end() == it) {
+			nRandomNum = nNumMin + (rand() % (nNumMax - nNumMin + 1));
+			nRandomNum = m_vecUsed[nRandomNum];
+			vecIntIt it = find(m_vecUsed.begin(), m_vecUsed.end(), nRandomNum);
+			if (m_vecUsed.end() != it) {
 				bRes = true;
-				m_vecUsed.push_back(nRandomNum);
-				if (m_vecUsed.size() == m_nNumMax)
+				m_vecUsed.erase(it);
+				m_nItemCount--;
+				if (0 == m_nItemCount)
 					m_bIsRandomOver = true;
 			}
 		} while (!bRes);
 	}
 
 	return bRes;
+}
+
+bool CRandom::randomRepeatable(int &nRandomNum)
+{
+	if (m_nNumMax >= m_nNumMin) {
+		srand(time(NULL));
+		nRandomNum = m_nNumMin + (rand() % (m_nNumMax - m_nNumMin + 1));
+		return true;
+	}
+
+	return false;
 }
 
 void CRandom::resetRandom(int nNumMin, int nNumMax)
@@ -54,13 +79,54 @@ void CRandom::resetRandom(int nNumMin, int nNumMax)
 		m_vecUsed.clear();
 		m_nNumMin = nNumMin;
 		m_nNumMax = nNumMax;
+		m_nItemCount = m_nNumMax - m_nNumMin + 1;
+
+		for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
+			m_vecUsed.push_back(nIndex);
+
+		if (m_nNumMax < m_nNumMin)
+			m_bIsRandomOver = true;//empty_filedata
 	}
 }
 
-void CRandom::muteIndex(const int &nIndex)
+bool CRandom::muteNum(const int &nNum)
 {
-	m_vecUsed.push_back(nIndex);
+	vecIntIt itUserMute = find(m_vecUsed.begin(), m_vecUsed.end(), nNum);
+	if (m_vecUsed.end() != itUserMute) {
+		m_vecUsed.erase(itUserMute);
+		m_nItemCount--;
+		return true;
+	}
+
+	return false;
 }
+
+bool CRandom::addNum(const int &nNum)
+{
+	assert(m_nNumMax + 1 == nNum);
+	vecIntIt itUserMian = find(m_vecUsed.begin(),m_vecUsed.end(),nNum);
+	if (m_vecUsed.end() == itUserMian) {
+		m_bIsRandomOver = false;
+		m_nNumMax = nNum;
+		m_nItemCount++;
+		m_vecUsed.push_back(nNum);
+
+		return true;
+	}
+
+	return false;
+}
+
+void CRandom::resetRandom()
+{
+	m_bIsRandomOver = false;
+	m_vecUsed.clear();
+	m_nItemCount = m_nNumMax - m_nNumMin + 1;
+
+	for (int nIndex = m_nNumMin; nIndex <= m_nNumMax; nIndex++)
+		m_vecUsed.push_back(nIndex);
+}
+
 /*
  * className: CFileData
  * the class main designed for randomNum Tools.Mainly deal with Three Nums fiiles: ***.dat,mute.dat,designation.dat.
@@ -75,6 +141,7 @@ m_pFileMute(nullptr),
 m_nFileMainLineCount(0),
 m_nFileMuteLineCount(0),
 m_nFileDesignationLineCount(0),
+m_strProjName(L""),
 m_errorType(error_FileData::error_NULL)
 {
 	m_strMainBuffer.clear();
@@ -90,7 +157,7 @@ m_errorType(error_FileData::error_NULL)
 	m_strDesignationPath.clear();
 }
 
-CFileData::CFileData(const std::string &filepath1, const std::string &filepath2, const std::string &filepath3):
+CFileData::CFileData(const std::string &filepath1, const std::string &filepath2, const std::string &filepath3, const CString &strProjName) :
 m_pFileDesignation(NULL),
 m_pFileMain(nullptr),
 m_pFileMute(nullptr),
@@ -100,6 +167,7 @@ m_nFileDesignationLineCount(0),
 m_strMainFilePath(filepath1),
 m_strMuteFilePath(filepath2),
 m_strDesignationPath(filepath3),
+m_strProjName(strProjName),
 m_errorType(error_FileData::error_NULL)
 {
 	m_strMainBuffer.clear();
@@ -123,6 +191,7 @@ CFileData::~CFileData()
 
 bool CFileData::resetMain()
 {
+	CAutoLock al(&m_lock);
 	m_vecMainData.clear();
 
 	fclose(m_pFileMain);
@@ -139,6 +208,7 @@ bool CFileData::resetMain()
 
 bool CFileData::resetMute()
 {
+	CAutoLock al(&m_lock);
 	m_vecMuteData.clear();
 	fclose(m_pFileMute);
 	m_pFileMute = nullptr;
@@ -154,6 +224,7 @@ bool CFileData::resetMute()
 
 bool CFileData::resetDesignation()
 {
+	CAutoLock al(&m_lock);
 	m_vecDesignationData.clear();
 	fclose(m_pFileDesignation);
 	m_pFileDesignation = nullptr;
@@ -179,25 +250,24 @@ bool CFileData::resetAllData()
 
 BOOL CFileData::randomStr(std::string &strNum)
 {
+	CAutoLock al(&m_lock);
 	if (m_errorType & error_Ok) {
 
 		int nNum = 0;
 		std::string strName;
 
 		{//random special data
-			m_randomSpecial.resetRandom(1,m_nFileDesignationLineCount);
 			if (m_randomSpecial.random(nNum)) {
 				strNum = m_vecDesignationData[nNum - 1];
 				vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), strNum);
 				int nIndexByMain = itMain - m_vecMainData.begin() + 1;
-				m_randomMain.muteIndex(nIndexByMain);
+				m_randomMain.muteNum(nIndexByMain);
 				return m_errorType;
 			}
 		}
 
 		{//random from source file
 			int nRandomCount = 0;
-			m_randomMain.resetRandom(1, m_nFileMainLineCount);
 			do {
 				if (m_randomMain.random(nNum))
 						strNum = m_vecMainData[nNum - 1];
@@ -212,8 +282,23 @@ BOOL CFileData::randomStr(std::string &strNum)
 	return m_errorType;
 }
 
+BOOL CFileData::randomStrRepeatable(std::string &strNum)
+{
+	if (m_errorType & error_Ok) {
+
+		int nNum = 0;
+		if (m_randomMain.randomRepeatable(nNum)) {
+
+			strNum = m_vecMainData[nNum - 1];
+		}
+	}
+
+	return m_errorType;
+}
+
 bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType_Main*/)
 {
+	CAutoLock al(&m_lock);
 	switch (eType)
 	{
 	case eFileType::eType_Main: {
@@ -221,9 +306,17 @@ bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType
 		if (m_vecMainData.end() == itMain) {
 
 			m_nFileMainLineCount++;
-			m_vecMainData.push_back(str);
-			fseek(m_pFileMain, 0, SEEK_END);
-			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMain);
+			m_randomMain.addNum(m_nFileMainLineCount);
+			m_vecMainData.push_back(str); 
+			int nres = fseek(m_pFileMain, 0, SEEK_END);
+			std::string strWritten = str + "\r\n";
+			nres = fwrite((char*)strWritten.data(), sizeof(char), strWritten.length(), m_pFileMain);
+			fflush(m_pFileMain);
+			return nres;
+		}
+		else {
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"重复项,添加失败.");
+			return false;
 		}
 	}
 								break;
@@ -237,21 +330,43 @@ bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType
 
 bool CFileData::mute(const std::string &str, eFileType eType /*= eFileType::eType_Mute*/)
 {
+	CAutoLock al(&m_lock);
 	switch (eType)
 	{
 	case eFileType::eType_Main:
 		break;
 	case eFileType::eType_Mute: {
+		vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), str);
+		if (m_vecMainData.end() == itMain) {
+
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"之前没有添加过该数据,请先添加");
+			return false;
+		}
+
+		vecStrIte itSpecial = find(m_vecDesignationData.begin(), m_vecDesignationData.end(), str);
+		if (m_vecDesignationData.end() != itSpecial) {
+
+			//重新导入文件.
+			return false;
+		}
+
 		vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), str);
-		if (m_vecMuteData.end() != itMute) {
+		if (m_vecMuteData.end() == itMute) {
 
 			m_nFileMuteLineCount++;
 			m_vecMuteData.push_back(str);
-			fseek(m_pFileMute, 0, SEEK_END);
-			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileMute);
+			int nres = fseek(m_pFileMute, 0, SEEK_END);
+			std::string strWritten = str + "\r\n";
+			nres = fwrite((char*)strWritten.data(), sizeof(char), strWritten.length(), m_pFileMute);
+			fflush(m_pFileMain);
+			return nres;
+		}
+		else {
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"重复项,添加失败");
+			return false;
 		}
 	}
-								break;;
+								break;
 	case eFileType::eType_Designation:
 		break;
 	default:break;
@@ -260,6 +375,7 @@ bool CFileData::mute(const std::string &str, eFileType eType /*= eFileType::eTyp
 
 bool CFileData::designation(const std::string &str, eFileType eType /*= eFileType::eType_Designation*/)
 {
+	CAutoLock al(&m_lock);
 	switch (eType)
 	{
 	case eFileType::eType_Main:
@@ -267,13 +383,34 @@ bool CFileData::designation(const std::string &str, eFileType eType /*= eFileTyp
 	case eFileType::eType_Mute:
 		break;
 	case eFileType::eType_Designation: {
+		vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), str);
+		if (m_vecMainData.end() == itMain) {
+
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"之前没有添加过该数据,请先添加");
+			return false;
+		}
+
+		vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), str);
+		if (m_vecMuteData.end() != itMute) {
+
+			//重新导入文件.
+			return false;
+		}
+
 		vecStrIte itSpecial = find(m_vecDesignationData.begin(), m_vecDesignationData.end(), str);
-		if (m_vecDesignationData.end() != itSpecial) {
+		if (m_vecDesignationData.end() == itSpecial) {
 
 			m_nFileDesignationLineCount++;
 			m_vecDesignationData.push_back(str);
-			fseek(m_pFileDesignation, 0, SEEK_END);
-			return fwrite((char*)str.data(), sizeof(char), str.length(), m_pFileDesignation);
+			int nres = fseek(m_pFileDesignation, 0, SEEK_END); 
+			std::string strWritten = str + "\r\n";
+			nres = fwrite((char*)strWritten.data(), sizeof(char), strWritten.length(), m_pFileDesignation);
+			fflush(m_pFileMain);
+			return nres;
+		}
+		else {
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"重复项,添加失败");
+			return false;
 		}
 	}
 									   break;
@@ -333,6 +470,7 @@ void CFileData::unloadFile()
 		m_pFileDesignation = nullptr;
 	}
 
+	m_strProjName = L"";
 	m_strMainBuffer.clear();
 	m_strMuteBuffer.clear();
 	m_strDesignationBuffer.clear();
@@ -427,12 +565,19 @@ inline int CFileData::readAllStrEx(eFileType eType)
 
 	if (!strName.empty() && !strName.empty()) {
 		nDataLines++;
-		if (eType_Main == eType)
+		if (eType_Main == eType) {
 			m_vecMainData.push_back(strName);
-		else if (eType_Mute == eType)
+			int nres = fwrite("\r\n", 1, 2, m_pFileMain);
+			int i = 0;
+		}
+		else if (eType_Mute == eType) {
 			m_vecMuteData.push_back(strName);
-		else if (eType_Designation == eType)
-		m_vecDesignationData.push_back(strName);
+			fwrite("\r\n", 1, 2, m_pFileMute);
+		}
+		else if (eType_Designation == eType) {
+			m_vecDesignationData.push_back(strName);
+			fwrite("\r\n", 1, 2, m_pFileDesignation);
+		}
 		strName.clear();
 	}
 	if (m_pFileMain == pFile)
@@ -506,6 +651,20 @@ int CFileData::dataCheckSelf()
 		m_errorType |= error_Ok;
 
 	return m_errorType;
+}
+
+int CFileData::getFileStatus()
+{
+	CAutoLock al(&m_lock);
+
+	return m_errorType;
+}
+
+CString CFileData::getProjName()
+{
+	CAutoLock al(&m_lock);
+
+	return m_strProjName;
 }
 
 inline int CFileData::writeEndStr(eFileType type,const std::string &str)
@@ -754,7 +913,8 @@ inline void CProjData::unloadAllFileData()
 //////////////////////////////////////////////////////////////////////////
 CSingleton<CProjDataInstance>::CGrabo CProjDataInstance::graboInstance;
 
-CProjDataInstance::CProjDataInstance()
+CProjDataInstance::CProjDataInstance():
+m_pFileData(nullptr)
 {
 	std::string strPath = CommonFun::getAbsoluteDir();
 	strPath = CommonFun::getPirorDir(strPath);
@@ -768,9 +928,11 @@ CProjDataInstance::CProjDataInstance()
 
 CProjDataInstance::~CProjDataInstance()
 {
-
+	if (m_pFileData) {
+		delete m_pFileData;
+		m_pFileData = nullptr;
+	}
 }
-
 
 int CProjDataInstance::LoadProjData()
 {
@@ -790,8 +952,19 @@ int CProjDataInstance::LoadProjData()
 		CString fileName = findHandle.GetFileName();
 		if (findHandle.IsDirectory() && !findHandle.IsDots()) {
 			nRet++;
-			CProjData* pProData = new CProjData(m_strDefPrefixPath + fileName + _T("\\"), fileName);
-			m_vecProjData.push_back(pProData);
+			vecWStr vecSub;
+
+			CFileFind findHandleSub;
+			CString strDestDirSub = m_strDefPrefixPath + fileName + "\\*.*";
+			bool isNotEmptySub = findHandleSub.FindFile(strDestDirSub);
+			while (isNotEmptySub) {
+				isNotEmptySub = findHandleSub.FindNextFileW();
+				CString fileNameSub = findHandleSub.GetFileName();
+				if (!findHandleSub.IsDirectory() && !findHandleSub.IsDots()){
+					vecSub.push_back(fileNameSub);
+				}
+			}
+			m_mapProject.insert(make_pair(fileName, vecSub));
 		}
 	}
 
@@ -805,8 +978,152 @@ int CProjDataInstance::LoadProjDataExtra(const CString &strPrefixPath, const CSt
 
 void CProjDataInstance::unInitLoadProdData()
 {
-	for (std::vector<CProjData*>::iterator it = m_vecProjData.begin(); m_vecProjData.end() != it; it++) {
-		delete (*it);
-		(*it) = nullptr;
+	CAutoLock al(&m_Lock);
+	if (m_pFileData) {
+		delete m_pFileData;
+		m_pFileData = nullptr;
+	}
+}
+
+CString CProjDataInstance::getPrefixPath()
+{
+	CAutoLock al(&m_Lock);
+	return m_strDefPrefixPath;
+}
+
+void CProjDataInstance::getProjData(std::map<CString, std::vector<CString>> &mapData)
+{
+	CAutoLock al(&m_Lock);
+	
+	mapData = m_mapProject;
+}
+
+void CProjDataInstance::insertProjDataItem(LPRANDOM_NEW_PROJ lpData)
+{
+	CAutoLock al(&m_Lock);
+	if (lpData) {
+		
+		mapWStrVecIt mapIt = m_mapProject.find(lpData->strProjName);
+		if (m_mapProject.end() != mapIt)
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(_T("已经存在相同的项目了,请重新命名"));
+		else
+			m_mapProject.insert(make_pair(lpData->strProjName, lpData->m_vecFileName));
+	}
+}
+
+void CProjDataInstance::deleteItem(const CString strParam)
+{
+	CAutoLock al(&m_Lock);
+	mapWStrVecIt mapit = m_mapProject.find(strParam);
+	if (m_mapProject.end() != mapit) {
+		
+		if (m_pFileData->getProjName() == strParam) {
+			delete m_pFileData; 
+			m_pFileData = nullptr;
+
+			LPRANDOM_DELETE_PROJ lpData = new RANDOM_DELETE_PROJ;
+			if (lpData) {
+
+				lpData->nRes = CFileData::error_Ok;
+				lpData->strProjName = strParam;
+				::PostMessage(theApp.GetMainWnd()->m_hWnd, RandomMsg_DELETE_PROJ, (WPARAM)lpData, NULL);
+			}
+		}
+
+		CString strDir;
+		CString strDirName;
+		int nCount = mapit->second.size();
+		strDir.Format(L"%s%s\\", m_strDefPrefixPath, strParam);
+		for (int nIndex = 0; nIndex < nCount; nIndex++) {
+
+			strDirName.Format(L"%s%s", strDir,(mapit->second[nIndex]));
+			BOOL bRes = DeleteFile(strDirName);
+		}
+
+		BOOL bRes =RemoveDirectory(strDir);
+
+		m_mapProject.erase(mapit);
+	}
+}
+
+void CProjDataInstance::getVectorFiles(const CString strParma,std::vector<CString> &vecTemp)
+{
+	CAutoLock al(&m_Lock);
+	mapWStrVecIt itMap = m_mapProject.find(strParma);
+	if (m_mapProject.end() != itMap) {
+
+		vecTemp = itMap->second;
+	}
+}
+
+int CProjDataInstance::ImportProj(const CString &strProjName)
+{
+	CAutoLock al(&m_Lock);
+
+	mapWStrVecIt itMpa = m_mapProject.find(strProjName);
+	if (m_mapProject.end() != itMpa) {
+
+		if (m_pFileData) {
+			if (m_pFileData->getProjName() == strProjName)
+				return false;//the same project
+			delete m_pFileData;
+			m_pFileData = nullptr;
+		}
+
+		std::string strProjName1 = CommonFun::cs2s(strProjName);
+		if (!m_pFileData) {
+			char szbufMain[128] = { '\0' };
+			sprintf_s(szbufMain, "..\\data\\%s\\%s.dat", strProjName1.data(), strProjName1.data());
+			char szbufMute[128] = { '\0' };
+			sprintf_s(szbufMute, "..\\data\\%s\\mute.dat", strProjName1.data());
+			char szbufDesignation[128] = { '\0' };
+			sprintf_s(szbufDesignation, "..\\data\\%s\\designation.dat", strProjName1.data());
+			m_pFileData = new CFileData(szbufMain, szbufMute, szbufDesignation,strProjName);
+			return m_pFileData->getFileStatus();
+		}
+	}
+	else
+		return CFileData::error_Random_NoValidProj;
+}
+
+void CProjDataInstance::addStr(const std::string&str)
+{
+	if (m_pFileData)
+		m_pFileData->add(str, CFileData::eType_Main);
+}
+
+void CProjDataInstance::muteStr(const std::string &str)
+{
+	if (m_pFileData)
+		m_pFileData->mute(str, CFileData::eType_Mute);
+}
+
+void CProjDataInstance::designationStr(const std::string &str)
+{
+	if (m_pFileData)
+		m_pFileData->designation(str, CFileData::eType_Designation);
+}
+
+bool CProjDataInstance::RandomStr(CString &str)
+{
+	if (m_pFileData) {
+
+		std::string strNum;
+		BOOL bRes = m_pFileData->randomStr(strNum);
+		str = CommonFun::s2cs(strNum);
+
+		return !((bRes & CFileData::error_Random_Over) || (bRes & CFileData::error_DataFile_Empty));
+	}
+}
+
+bool CProjDataInstance::RandomStrRepeatable(CString &str)
+{
+	if (m_pFileData) {
+
+		std::string strNum;
+		BOOL bRes = m_pFileData->randomStrRepeatable(strNum);
+		str = CommonFun::s2cs(strNum);
+
+		return !(bRes & CFileData::error_DataFile_Empty);
 	}
 }

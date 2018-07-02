@@ -4,12 +4,13 @@
 
 #include "stdafx.h"
 #include "RandomNumTools-Windows.h"
-#include "RandomNumTools-WindowsDlg.h"
 #include "afxdialogex.h"
 #include "Utilc.h"
 using namespace CPlusBaluoteli;
 using namespace CPlusBaluoteli::util;
+using namespace CPlusBaluoteli::control;
 using namespace CPlusBaluoteli::FormatStr;
+#include "RandomNumTools-WindowsDlg.h"
 
 #include "DlgConfig.h"
 #include "DlgImportProj.h"
@@ -89,6 +90,7 @@ CRandomNumToolsWindowsDlg::CRandomNumToolsWindowsDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CRandomNumToolsWindowsDlg::IDD, pParent),
 	m_pThreadTTS(NULL)
 	, m_bResume(FALSE)
+	, m_pProjInstance(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -118,8 +120,8 @@ BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SHOWWINDOW()
 	ON_WM_TIMER()
-	ON_BN_CLICKED(IDC_BUTTON_CLOSE,OnBnClickedBtnClose)
-	ON_BN_CLICKED(IDC_BUTTON_MIN,OnBnClickedBtnMin)
+	ON_BN_CLICKED(IDC_BUTTON_CLOSE, OnBnClickedBtnClose)
+	ON_BN_CLICKED(IDC_BUTTON_MIN, OnBnClickedBtnMin)
 	ON_BN_CLICKED(IDC_BUTTON_IMPORTFILE, &CRandomNumToolsWindowsDlg::OnBnClickedButtonImportfile)
 	ON_BN_CLICKED(IDC_BUTTON_FULLSCREEN, &CRandomNumToolsWindowsDlg::OnBnClickedButtonFullscreen)
 	ON_BN_CLICKED(IDC_BUTTON_CONFIG, &CRandomNumToolsWindowsDlg::OnBnClickedButtonConfig)
@@ -128,6 +130,8 @@ BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_MUTE, &CRandomNumToolsWindowsDlg::OnBnClickedButtonMute)
 	ON_BN_CLICKED(IDC_BUTTON_START, &CRandomNumToolsWindowsDlg::OnBnClickedButtonStart)
 	ON_BN_CLICKED(IDC_BUTTON_SURE, &CRandomNumToolsWindowsDlg::OnBnClickedButtonSure)
+	ON_MESSAGE(RandomMsg_IMPORT_PROJ, OnImportFile)
+	ON_MESSAGE(RandomMsg_DELETE_PROJ,OnDeleteFile)
 END_MESSAGE_MAP()
 
 
@@ -164,9 +168,10 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 #if 0
+
 	std::string mainbuffer;
 	int nCount = 0;
-	FILE *pFile = fopen("..\\data\\aaa\\aaa.dat", "ab+");
+	FILE *pFile = fopen("..\\data\\延安军事会议\\延安军事会议.dat", "ab+");
 	fflush(pFile);
 	long llen1 = ftell(pFile);
 	char buffer[10];
@@ -189,8 +194,8 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 	fclose(pFile);
 #endif
 	
-#if 1
-	CFileData filedata("..\\data\\aaa\\aaa.dat", "..\\data\\aaa\\mute.dat", "..\\data\\aaa\\designation.dat");
+#if 0
+	CFileData filedata("..\\data\\延安军事会议\\延安军事会议.dat", "..\\data\\延安军事会议\\mute.dat", "..\\data\\延安军事会议\\designation.dat");
 	BOOL bres = filedata.dataCheckSelf();
 	char szbuf[MAX_PATH] = { '\0' };
 	std::string strName;
@@ -230,10 +235,14 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 
 #endif
 
+#if 0
+	CProjDataInstance *pInstance = CProjDataInstance::getInstance();
+#endif
 
 	SetBackgroundImage(IDB_BITMAP_MAIN);	
 	initCtrl();
 	initTTS();
+	m_pProjInstance = CProjDataInstance::getInstance();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -263,6 +272,10 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	m_editDesignation.SetTip(KStrDesignationTip);
 	m_editDesignation.SetWindowTextW(KStrDesignationTip);
 	
+	m_btnAdd.EnableWindow(FALSE);
+	m_btnMute.EnableWindow(FALSE);
+	m_btnDesign.EnableWindow(FALSE);
+
 	m_btnImport.EnableRoundCorner(TRUE);
 	m_btnImport.SetBackColor(RGB(0x00, 0xA0, 0xE9), RGB(0x05, 0x78, 0xAA), RGB(0x05, 0x78, 0xAA), RGB(0xE6, 0xE6, 0xE6));
 	m_btnImport.SetFont(&m_ftBtn);
@@ -292,12 +305,14 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	m_btnStart.SetFont(&m_ftBtn);
 	m_btnStart.SetTextColor(RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF), RGB(0xCC, 0xCC, 0xCC));
 	m_btnStart.SetWindowTextW(KStrStart);
+	m_btnStart.EnableWindow(FALSE);
 
 	m_btnSure.EnableRoundCorner(TRUE);
 	m_btnSure.SetBackColor(RGB(0x00, 0xA0, 0xE9), RGB(0x05, 0x78, 0xAA), RGB(0x05, 0x78, 0xAA), RGB(0xE6, 0xE6, 0xE6));
 	m_btnSure.SetFont(&m_ftBtn);
 	m_btnSure.SetTextColor(RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF), RGB(0xCC, 0xCC, 0xCC));
 	m_btnSure.SetWindowTextW(KStrSure);
+	m_btnSure.EnableWindow(FALSE);
 
 	gConfig.setTagName("V1.0.0,Build100,2018/06/25,V1.0.0  @baluoteliz@gmail.com All Right Reserverd");
 	gConfig.setTitleName("上海兆言网络科技有限公司");
@@ -376,12 +391,19 @@ inline void CRandomNumToolsWindowsDlg::DrawClient(CDC *pDC)
 	pDC->SetTextColor(RGB(27, 41, 62));
 	pDC->TextOut(rtClient.Width() / 2 - 120,8,m_strVendorTitle,_tcslen(m_strVendorTitle));
 
-	defFont = pDC->SelectObject(&m_ftTag);
+	if (!m_strImprtProjName.IsEmpty()) {
+
+		pDC->SetBkColor(RGB(230, 231, 232));
+		pDC->SetTextColor(RGB(0, 122, 204));
+		pDC->TextOut(rtClient.left + 50, rtClient.top + 260, m_strImprtProjName, _tcslen(m_strImprtProjName));
+	}
+
+	pDC->SelectObject(&m_ftTag);
 	pDC->FillSolidRect(rtClient.right / 2 - 300, rtClient.Height()-24, 600, 24, RGB(0, 122, 204));
 	pDC->SetBkColor(RGB(0, 122, 204));
 	pDC->SetTextColor(RGB(0xFF, 0xFF, 0xFF));
 	pDC->TextOut(rtClient.Width() / 2 - 250, rtClient.Height() - 21, m_strVersionTag, _tcslen(m_strVersionTag));
-
+	
 	pDC->SelectObject(defFont);
 }
 
@@ -564,6 +586,13 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonAdd()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+	if (m_pProjInstance) {
+		CString strParam;
+		m_editAddName.GetWindowTextW(strParam);
+		m_editAddName.SetWindowTextW(L"");
+		std::string strName = CommonFun::cs2s(strParam);
+		m_pProjInstance->addStr(strName);
+	}
 }
 
 
@@ -571,6 +600,13 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonDesignation()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+	if (m_pProjInstance) {
+		CString strParam;
+		m_editDesignation.GetWindowTextW(strParam);
+		m_editDesignation.SetWindowTextW(L"");
+		std::string strName = CommonFun::cs2s(strParam);
+		m_pProjInstance->designationStr(strName);
+	}
 }
 
 
@@ -578,6 +614,13 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonMute()
 {
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
+	if (m_pProjInstance) {
+		CString strParam;
+		m_editMuteName.GetWindowTextW(strParam);
+		m_editMuteName.SetWindowTextW(L"");
+		std::string strName = CommonFun::cs2s(strParam);
+		m_pProjInstance->muteStr(strName);
+	}
 }
 
 
@@ -586,13 +629,19 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonStart()
 	// TODO: Add your control notification handler code here
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
-	m_btnStart.EnableWindow(FALSE);
-	m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
-	playSoundBk();
-	m_btnSure.EnableWindow(TRUE);
-	m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
-	m_btnSure.Invalidate(TRUE);
-	m_btnStart.Invalidate(TRUE);
+	if (m_pProjInstance)
+		if (m_pProjInstance->RandomStr(m_StrHitName)){
+
+			m_btnStart.EnableWindow(FALSE);
+			m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
+			playSoundBk();
+			m_btnSure.EnableWindow(TRUE);
+			m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
+			m_btnSure.Invalidate(TRUE);
+			m_btnStart.Invalidate(TRUE);
+		}
+		else
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"项目数据为空 或者 所有数据都已经随机出现过了.");
 }
 
 
@@ -610,7 +659,6 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 	m_btnStart.Invalidate(TRUE);
 
 	m_pThreadTTS->ResumeThread();
-	m_StrHitName = L"周磊刚";
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
@@ -633,4 +681,46 @@ void CRandomNumToolsWindowsDlg::OnBnClickedBtnMin()
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
 	ShowWindow(SW_MINIMIZE);
+}
+
+LRESULT CRandomNumToolsWindowsDlg::OnImportFile(WPARAM wParam, LPARAM lParam)
+{
+	LPRANDOM_IMPORT_PROJ lpData = (LPRANDOM_IMPORT_PROJ)wParam;
+	if (lpData) {
+
+		if (lpData->nRes & CFileData::error_DataFile_Empty)
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"该项目数据为空.请为该项目编辑数据.");
+		m_strImprtProjName = lpData->strProjName;
+		m_btnAdd.EnableWindow(TRUE);
+		m_btnMute.EnableWindow(TRUE);
+		m_btnDesign.EnableWindow(TRUE);
+		m_btnStart.EnableWindow(TRUE);
+
+		Invalidate(TRUE);
+
+		delete lpData; lpData = nullptr;
+	}
+
+	return TRUE;
+}
+
+LRESULT CRandomNumToolsWindowsDlg::OnDeleteFile(WPARAM wParam, LPARAM lParam)
+{
+	LPRANDOM_DELETE_PROJ lpData = (LPRANDOM_DELETE_PROJ)wParam;
+	if (lpData) {
+
+		if (m_strImprtProjName == lpData->strProjName) {
+			m_strImprtProjName = "";
+
+			m_btnAdd.EnableWindow(FALSE);
+			m_btnDesign.EnableWindow(FALSE);
+			m_btnMute.EnableWindow(FALSE);
+
+			Invalidate(TRUE);
+
+			delete lpData; lpData = nullptr;
+		}
+	}
+
+	return TRUE;
 }

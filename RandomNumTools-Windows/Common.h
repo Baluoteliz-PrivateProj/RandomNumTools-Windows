@@ -3,7 +3,7 @@
 
 namespace Random {
 
-	const TCHAR* const KStrImportFile = _T("导入项目");
+	const TCHAR* const KStrImportFile = _T("导入/新建 项目");
 	const TCHAR* const KStrFullScreen = _T("全屏");
 	const TCHAR* const KStrConfig = _T("配置");
 
@@ -21,12 +21,20 @@ namespace Random {
 	const TCHAR* const KStrEdit = _T("编辑");
 	const TCHAR* const KStrDelete = _T("删除");
 
-	const TCHAR* const KCtrlItemIndex = _T("序号");
-	const TCHAR* const KCtrlItemName = _T("名称");
-	const TCHAR* const KCtrlItemCount = _T("文件数");
+	const TCHAR* const KCtrlItemIndex = _T("项目序号");
+	const TCHAR* const KCtrlItemName = _T("项目名称");
+	const TCHAR* const KCtrlItemCount = _T("项目文件数");
+	const TCHAR* const KCtrlItemError = _T("文件异常");
 
-	const TCHAR* const KFileNameMute = _T("Mute.dat");
-	const TCHAR* const KFileNameDesignation = _T("Designation.dat");
+	const TCHAR* const KListCtrlItemText = _T("通过双击选中某一个项目");
+	const TCHAR* const KERROR_AllDataItemMuted = _T("所有有效数据都已经被屏蔽了");
+	const TCHAR* const KERROR_DataFileEmpty = _T("数据文件为空.");
+	const TCHAR* const KERROR_InSpecialFiles = _T("指定文件中出现了无效数据");
+	const TCHAR* const KERROR_SameItemConflict_MuteAndSpecial = _T("屏蔽和指定文件中出现了相同元素的数据");
+	const TCHAR* const KERROR_NoValidProj = _T("不存在这个项目的数据");
+
+	const TCHAR* const KFileNameMute = _T("mute.dat");
+	const TCHAR* const KFileNameDesignation = _T("designation.dat");
 
 	enum eTypeData{
 		eType_NULL = 0x00,
@@ -40,13 +48,27 @@ namespace Random {
 	{
 		eTypeData dataTpye;
 		int nGroupCount;
+		CString strProjName;
 
 		std::vector<CString /*strFileName*/> m_vecFileName;
 	}*PRANDOM_NEW_PROJ,*LPRANDOM_NEW_PROJ;
 
+	typedef struct eTagRANDOM_IMPORT_PROJ{
+		CString strProjName;
+		int nRes;
+	}RANDOM_IMPORT_PROJ,*PRANDOM_IMPORT_PROJ,*LPRANDOM_IMPORT_PROJ;
+
+	typedef struct eTagRANDOM_DELETE_PROJ{
+		CString strProjName;
+		int nRes;
+	}RANDOM_DELETE_PROJ, *PRANDOM_DELETE_PROJ, *LPRANDOM_DELETE_PROJ;
+
 	enum eTagRandomMsg
 	{
 		RandomMsg_NULL = WM_USER,
+		RandomMsg_UPDATA_LISTCTRL,
+		RandomMsg_IMPORT_PROJ,
+		RandomMsg_DELETE_PROJ,
 
 
 		Random_KNOWN = WM_USER +0xff,

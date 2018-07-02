@@ -2,6 +2,15 @@
 
 #include "Singleton.h"
 
+typedef std::vector<int>::iterator vecIntIt;
+typedef std::vector<std::string>::iterator vecStrIt;
+typedef std::vector<int> vecInt;
+typedef std::vector<std::string> vecStr;
+typedef std::vector<CString>::iterator vecWStrIt;
+typedef std::vector<CString> vecWStr;
+typedef std::map<CString, std::vector<CString>>::iterator mapWStrVecIt;
+typedef std::map<CString, std::vector<CString>> mapWStrVec;
+
 class CRandom{
 public:
 	CRandom();
@@ -9,15 +18,18 @@ public:
 	~CRandom();
 
 	bool random(int &nRandomNum);
+	bool randomRepeatable(int &nRandomNum);
 	void resetRandom(int nNumMin,int nNumMax);
-	void muteIndex(const int &nIndex);
+	bool muteNum(const int &nNum);
+	bool addNum(const int &nNum);
+	void resetRandom();
 
 private:
 	int m_nNumMin;
 	int m_nNumMax;
+	int m_nItemCount;
 
 	bool m_bIsRandomOver;
-	typedef std::vector<int>::iterator vecIt;
 	std::vector<int> m_vecUsed;
 };
 
@@ -25,7 +37,7 @@ class CFileData
 {
 public:
 	CFileData();
-	CFileData(const std::string &filepath1,const std::string &filepath2,const std::string &filepath3);
+	CFileData(const std::string &filepath1,const std::string &filepath2,const std::string &filepath3,const CString &strProjName);
 	~CFileData();
 
 	enum eFileType{
@@ -45,6 +57,7 @@ public:
 		error_DataFile_Empty = 8,
 		error_InValidItem_InSpecialFiles = 16, //inivalid dataitme in designation.dat.
 		error_Random_Over = 32,
+		error_Random_NoValidProj = 64,
 
 		error_UnKnown = 0xff,
 	};
@@ -55,8 +68,11 @@ public:
 	bool resetAllData();
 
 	int dataCheckSelf(); //data check self
+	int getFileStatus();
+	CString getProjName();
 	
 	BOOL randomStr(std::string &strNum);
+	BOOL randomStrRepeatable(std::string &strNum);
 	bool add(const std::string &str, eFileType eType = eFileType::eType_Main);
 	bool mute(const std::string &str, eFileType eType = eFileType::eType_Mute);
 	bool designation(const std::string &str,eFileType eType = eFileType::eType_Designation);
@@ -69,39 +85,6 @@ protected:
 	inline int writeEndStr(eFileType type, const std::string &str);
 	inline int getManiDataLines();
 	
-	typedef struct etagStatus{
-		etagStatus(int nIndex, bool bstatus):
-			m_bstatus(bstatus),
-			m_nIndex(nIndex){
-		}
-		etagStatus():
-		m_bstatus(false),
-		m_nIndex(0){
-		}
-		bool m_bstatus;
-		int m_nIndex;
-	}STATUS, *PSTATUS, *LPSTATUS;
-
-	typedef struct etagLineInfo{
-		etagLineInfo() :
-			m_strText(""),
-			m_bStatus(false) {
-		}
-		etagLineInfo(const std::string &strText,const bool &bstatus):
-		m_strText(strText),
-		m_bStatus(bstatus) {
-		}
-		bool operator <(const etagLineInfo& lineinfo) const{
-			if (this != &lineinfo)
-				return m_strText < lineinfo.m_strText;
-		}
-		std::string m_strText;
-		int m_bStatus;
-	}LINEINFO,*PLINEINFO,*LPLINEINFO;
-	
-	typedef std::map<int,LINEINFO>::iterator iteratorMain;
-	typedef std::map<std::string, STATUS>::iterator iteratorSpecial;
-
 	inline int readAllStrEx(eFileType eType);
 
 private:
@@ -119,10 +102,7 @@ private:
 	std::string m_strMainBuffer;
 	std::string m_strMuteBuffer;
 	std::string m_strDesignationBuffer;
-
-// 	std::map<int /*nIndex*/, LINEINFO/*status*/> m_mapMainData;
-// 	std::map<std::string /*strName*/, STATUS /*status*/> m_mapMuteData;
-// 	std::map<std::string /*strName*/, STATUS /*status*/> m_mapDesignationData;
+	CString m_strProjName;
 
 	std::vector<std::string> m_vecMainData;
 	std::vector<std::string> m_vecMuteData;
@@ -132,6 +112,7 @@ private:
 	CRandom m_randomSpecial;
 	CRandom m_randomMain;
 	int m_errorType;
+	CLock m_lock;
 };
 
 class CProjData
@@ -199,16 +180,29 @@ public:
 	friend CSingleton;
 	~CProjDataInstance();
 
-	int LoadProjData();
-	int LoadProjDataExtra(const CString &strPrefixPath,const CString &strProjName);
+	CString getPrefixPath();
+	void getProjData(std::map<CString,std::vector<CString>> &mapData);
+	void insertProjDataItem(LPRANDOM_NEW_PROJ lpData);
+	void deleteItem(const CString strParam);
+	void getVectorFiles(const CString strParma,std::vector<CString> &vecTemp);
+	int ImportProj(const CString &strProjName);
 
-	void unInitLoadProdData();
+	void addStr(const std::string &str);
+	void muteStr(const std::string &str);
+	void designationStr(const std::string &str);
+	bool RandomStr(CString &str);
+	bool RandomStrRepeatable(CString &str);
 
 private:
+	int LoadProjData();
+	int LoadProjDataExtra(const CString &strPrefixPath, const CString &strProjName);
+	void unInitLoadProdData();
+
 	CProjDataInstance();
 	static CSingleton<CProjDataInstance>::CGrabo graboInstance;
 	
+	std::map<CString,std::vector<CString>> m_mapProject;
 	CString m_strDefPrefixPath;
-	std::vector<CProjData*> m_vecProjData;
+	CFileData* m_pFileData;
 	CLock m_Lock;
 };

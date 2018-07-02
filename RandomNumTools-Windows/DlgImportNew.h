@@ -3,6 +3,7 @@
 
 // CDlgImportNew dialog
 
+class CProjDataInstance;
 class CDlgImportNew : public CDialogEx
 {
 	DECLARE_DYNAMIC(CDlgImportNew)
@@ -27,5 +28,9 @@ protected:
 
 private:
 
-
+	CProjDataInstance* m_pProjData;
+	CEdit m_EditNewProj;
+public:
+	afx_msg void OnBnClickedButtonOk();
+	afx_msg void OnBnClickedButtonCancel();
 };

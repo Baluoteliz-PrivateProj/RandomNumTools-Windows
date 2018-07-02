@@ -5,6 +5,7 @@
 #include <sphelper.h>  
 #include <string.h>  
 #pragma comment(lib, "sapi.lib")  
+#include "Singleton.h"
 
 class CTTSWrapper
 {
@@ -56,4 +57,29 @@ protected:
 	ISpObjectToken * m_pISpObjectToken;
 	ISpVoice * m_pISpVoice;
 	BOOL m_bComInit;
+};
+
+
+class CTTSInstance :public CSingleton<CTTSInstance>
+{
+public:
+	friend CSingleton;
+	~CTTSInstance();
+
+	int speak(CString strContent, DWORD dwFlags = SPF_DEFAULT);
+	
+protected:
+	static UINT ThreadTTSProc1(LPVOID param);
+	inline void initTTS();
+	inline void uninitTTS();
+
+private:
+	CTTSInstance();
+	static CSingleton<CTTSInstance>::CGrabo graboInstance;
+	CLock m_lock;
+
+	CTTSWrapper m_TtsWrapper;
+	bool m_bResume;
+	CWinThread* m_pTTSThread;
+	CString m_StrHitName;
 };
