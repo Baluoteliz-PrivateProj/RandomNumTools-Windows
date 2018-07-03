@@ -5,7 +5,7 @@
 
 namespace Random {
 
-	const TCHAR* const KStrImportFile = _T("导入/新建 项目");
+	const TCHAR* const KStrImportFile = _T("新建");
 	const TCHAR* const KStrFullScreen = _T("全屏");
 	const TCHAR* const KStrConfig = _T("配置");
 
@@ -84,6 +84,7 @@ namespace Random {
 		RandomMsg_IMPORT_PROJ,
 		RandomMsg_DELETE_PROJ,
 		RandomMsg_FULLSCREEN_SPEECH,
+		RandomMsg_UpdateRandom_Interval,
 
 
 		Random_KNOWN = WM_USER +0xff,

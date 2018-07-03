@@ -88,10 +88,10 @@
       <Filter>Dlg</Filter>
     </ClInclude>
     <ClInclude Include="DlgSpeeckTextRender.h">
-      <Filter>Header Files</Filter>
+      <Filter>Dlg</Filter>
     </ClInclude>
     <ClInclude Include="DlgFullScreenTextSpeech.h">
-      <Filter>Header Files</Filter>
+      <Filter>Dlg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -140,11 +140,11 @@
     <ClCompile Include="DlgImportEdit.cpp">
       <Filter>Dlg</Filter>
     </ClCompile>
-    <ClCompile Include="DlgSpeeckTextRender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DlgFullScreenTextSpeech.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgSpeeckTextRender.cpp">
+      <Filter>Dlg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

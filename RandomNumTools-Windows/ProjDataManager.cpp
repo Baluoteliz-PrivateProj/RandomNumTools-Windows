@@ -200,10 +200,16 @@ m_errorType(error_FileData::error_NULL)
 	dataCheckSelf();
 	m_randomMain.resetRandom(1,m_nFileMainLineCount);
 	m_randomSpecial.resetRandom(1, m_nFileDesignationLineCount);
+
+	char szbuf[MAX_PATH] = { '\0' };
+	sprintf_s(szbuf, "..\\随机结果\\%s.txt", CommonFun::cs2s(strProjName).data());
+	m_FileProjResult.openLog(szbuf,OPEN_ALWAYS);
+	writeResult("==新一轮随机操作开始.==");
 }
 
 CFileData::~CFileData()
 {
+	m_FileProjResult.close();
 	unloadFile();
 }
 
@@ -280,6 +286,7 @@ BOOL CFileData::randomStr(std::string &strNum)
 				vecStrIte itMain = find(m_vecMainData.begin(), m_vecMainData.end(), strNum);
 				int nIndexByMain = itMain - m_vecMainData.begin() + 1;
 				m_randomMain.muteNum(nIndexByMain);
+				writeResult(strNum);
 				return m_errorType;
 			}
 		}
@@ -291,10 +298,11 @@ BOOL CFileData::randomStr(std::string &strNum)
 						strNum = m_vecMainData[nNum - 1];
 					else{
 						m_errorType |= error_Random_Over;
-						break;
+						return m_errorType;
 					}
 			} while (m_vecMuteData.end() != find(m_vecMuteData.begin(), m_vecMuteData.end(), strNum) && (++nRandomCount) <= m_nFileMuteLineCount);
 		}
+		writeResult(strNum);
 	}
 
 	return m_errorType;
@@ -325,6 +333,9 @@ bool CFileData::add(const std::string &str, eFileType eType /*= eFileType::eType
 
 			if (m_errorType & error_Random_Over)
 				m_errorType &= ~error_Random_Over;
+			if (m_errorType & error_DataFile_Empty)
+				m_errorType &= ~error_DataFile_Empty;
+			m_errorType = error_Ok;
 			m_nFileMainLineCount++;
 			m_randomMain.addNum(m_nFileMainLineCount);
 			m_vecMainData.push_back(str); 
@@ -609,6 +620,17 @@ inline int CFileData::readAllStrEx(eFileType eType)
 		m_nFileDesignationLineCount = nDataLines;
 
 	return nRet;
+}
+
+int CFileData::writeResult(const std::string &str)
+{
+	char szBuffer[1024] = { '\0' };
+
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	sprintf_s(szBuffer, "%04d-%02d-%02d %02d:%02d:%02d: %s", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond,str.data());
+
+	return m_FileProjResult.write(szBuffer);
 }
 
 int CFileData::dataCheckSelf()
@@ -1019,16 +1041,22 @@ void CProjDataInstance::getProjData(std::map<CString, std::vector<CString>> &map
 	mapData = m_mapProject;
 }
 
-void CProjDataInstance::insertProjDataItem(LPRANDOM_NEW_PROJ lpData)
+bool CProjDataInstance::insertProjDataItem(LPRANDOM_NEW_PROJ lpData)
 {
 	CAutoLock al(&m_Lock);
 	if (lpData) {
 		
 		mapWStrVecIt mapIt = m_mapProject.find(lpData->strProjName);
-		if (m_mapProject.end() != mapIt)
+		if (m_mapProject.end() != mapIt){
+
 			FormatStr::CFormatStr::Baluoteliz_MessageBox(_T("已经存在相同的项目了,请重新命名"));
-		else
+			return false;
+		}
+		else{
+
 			m_mapProject.insert(make_pair(lpData->strProjName, lpData->m_vecFileName));
+			return true;
+		}
 	}
 }
 
@@ -1107,10 +1135,40 @@ int CProjDataInstance::ImportProj(const CString &strProjName)
 		return CFileData::error_Random_NoValidProj;
 }
 
+int CProjDataInstance::resetProj(const CString &strProjName)
+{
+	CAutoLock al(&m_Lock);
+
+	mapWStrVecIt itMpa = m_mapProject.find(strProjName);
+	if (m_mapProject.end() != itMpa) {
+		if (m_pFileData) {
+			if (m_pFileData->getProjName() == strProjName) {
+				delete m_pFileData;
+				m_pFileData = nullptr;
+			}
+		}
+
+		std::string strProjName1 = CommonFun::cs2s(strProjName);
+		if (!m_pFileData) {
+			char szbufMain[128] = { '\0' };
+			sprintf_s(szbufMain, "..\\data\\%s\\%s.dat", strProjName1.data(), strProjName1.data());
+			char szbufMute[128] = { '\0' };
+			sprintf_s(szbufMute, "..\\data\\%s\\mute.dat", strProjName1.data());
+			char szbufDesignation[128] = { '\0' };
+			sprintf_s(szbufDesignation, "..\\data\\%s\\designation.dat", strProjName1.data());
+			m_pFileData = new CFileData(szbufMain, szbufMute, szbufDesignation, strProjName);
+			return m_pFileData->getFileStatus();
+		}
+	}
+	else
+		return CFileData::error_Random_NoValidProj;
+}
+
 void CProjDataInstance::addStr(const std::string&str)
 {
 	if (m_pFileData)
-		m_pFileData->add(str, CFileData::eType_Main);
+		if (m_pFileData->add(str, CFileData::eType_Main))
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"添加成功");
 }
 
 void CProjDataInstance::muteStr(const std::string &str)

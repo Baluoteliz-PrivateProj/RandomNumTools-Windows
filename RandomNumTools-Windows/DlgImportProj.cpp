@@ -37,6 +37,7 @@ void CDlgImportProj::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_DELETE, m_agBtnDelete);
 	DDX_Control(pDX, IDC_LIST_PROJ_DATA, m_ctrlAllData);
 	DDX_Control(pDX, IDC_BUTTON_SURE, m_btnImport);
+	DDX_Control(pDX, IDC_BUTTON_IMPORTPROJ, m_agImportDir);
 }
 
 
@@ -51,6 +52,7 @@ BEGIN_MESSAGE_MAP(CDlgImportProj, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_CANCEL, &CDlgImportProj::OnBnClickedButtonCancel)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_PROJ_DATA, &CDlgImportProj::OnNMDBlickListProjData)
 	ON_MESSAGE(RandomMsg_UPDATA_LISTCTRL, &CDlgImportProj::OnUpdataListCtrl)
+	ON_BN_CLICKED(IDC_BUTTON_IMPORTPROJ, &CDlgImportProj::OnBnClickedButtonImportproj)
 END_MESSAGE_MAP()
 
 
@@ -319,4 +321,73 @@ LRESULT CDlgImportProj::OnUpdataListCtrl(WPARAM wParam, LPARAM lParam)
 	}
 
 	return TRUE;
+}
+
+void CDlgImportProj::OnBnClickedButtonImportproj()
+{
+	// TODO: Add your control notification handler code here
+	WCHAR szPath[MAX_PATH];
+	ZeroMemory(szPath, sizeof(szPath));
+
+	std::string strPath = CommonFun::getAbsoluteDir();
+	strPath = CommonFun::getPirorDir(strPath);
+	strPath = CommonFun::getPirorDirEx(strPath);
+	strPath.append("data");
+
+	CString strDefPrefixPath = CommonFun::s2cs(strPath);
+	BROWSEINFO bi;
+	bi.hwndOwner = m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = szPath;
+	bi.lpszTitle = L"";
+	bi.ulFlags = 0;
+	bi.lpfn = NULL;
+	bi.lParam = 0;
+	bi.iImage = 0;
+	//弹出选择目录对话框
+	LPITEMIDLIST lp = SHBrowseForFolder(&bi);
+
+	if (lp && SHGetPathFromIDList(lp, szPath))
+	{
+		CString strLoad = szPath;
+		int nIndex = strLoad.ReverseFind('\\');
+		CString strLoad1 = strLoad.Mid(0, nIndex);
+		if (L"data" != strLoad1.Mid(nIndex - 4, 4)){
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"只能导入data文件夹下的目录");
+			return;
+		}
+		strLoad = strLoad.Mid(nIndex + 1,strLoad.GetLength() - nIndex);
+		if (m_pProjDataInstance && !strLoad.IsEmpty()) {
+
+			LPRANDOM_NEW_PROJ lpData =  new RANDOM_NEW_PROJ;
+			if (lpData) {
+
+				lpData->strProjName = strLoad;
+				lpData->dataTpye = eTypeData::eType_Group_NO;
+				lpData->nGroupCount = 3;
+				std::vector<CString> vecTemp;
+				vecTemp.push_back(L"mute.dat");
+				vecTemp.push_back(L"designation.dat");
+				vecTemp.push_back(strLoad + L".dat");
+				lpData->m_vecFileName = vecTemp;
+
+				if (m_pProjDataInstance)
+					if (!m_pProjDataInstance->insertProjDataItem(lpData))
+						return;
+				int nRow = m_ctrlAllData.GetItemCount();
+				m_ctrlAllData.InsertItem(nRow, CommonFun::int2CS(nRow + 1));
+				m_ctrlAllData.SetItemText(nRow, 1, lpData->strProjName);
+				m_ctrlAllData.SetItemText(nRow, 2, CommonFun::int2CS(lpData->nGroupCount));
+				//m_ctrlAllData.SetItemState(nRow, LVIS_FOCUSED | LVIS_SELECTED, LVIS_SELECTED | LVIS_FOCUSED);
+				m_ctrlAllData.EnsureVisible(nRow, true);
+
+				m_ctrlAllData.Invalidate(TRUE);
+
+				delete lpData;
+				lpData = NULL;
+			}
+		}
+	}
+	else
+		AfxMessageBox(L"无效的目录，请重新选择");
 }

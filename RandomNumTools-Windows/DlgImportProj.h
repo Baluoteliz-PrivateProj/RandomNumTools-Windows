@@ -34,10 +34,11 @@ private:
 
 	CFont       m_ftTag;
 
+	CAGButton m_agImportDir;//imprt
 	CAGButton m_agBtnNew;
 	CAGButton m_agBtnEdit;
 	CAGButton m_agBtnDelete;
-	CButton m_btnImport;
+	CButton m_btnImport;//sure
 
 	CAGListCtrl m_ctrlAllData;
 
@@ -53,4 +54,5 @@ public:
 	afx_msg void OnBnClickedButtonCancel();
 	afx_msg void OnNMDBlickListProjData(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg LRESULT OnUpdataListCtrl(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnBnClickedButtonImportproj();
 };

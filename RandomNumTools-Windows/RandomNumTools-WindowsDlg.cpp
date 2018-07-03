@@ -93,7 +93,8 @@ CRandomNumToolsWindowsDlg::CRandomNumToolsWindowsDlg(CWnd* pParent /*=NULL*/)
 	m_pThreadTTS(NULL)
 	, m_bResume(FALSE)
 	, m_pProjInstance(nullptr),
-	m_pMainTextSpeechRender(nullptr)
+	m_pMainTextSpeechRender(nullptr),
+	m_pFullScreenTextSpeeckRender(nullptr)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -114,6 +115,7 @@ void CRandomNumToolsWindowsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT_DESIGNATION, m_editDesignation);
 	DDX_Control(pDX, IDC_BUTTON_MIN, m_btnMin);
 	DDX_Control(pDX, IDC_BUTTON_CLOSE, m_btnClose);
+	DDX_Control(pDX, IDC_BUTTON_RESET, m_btnReset);
 }
 
 BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
@@ -136,6 +138,8 @@ BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
 	ON_MESSAGE(RandomMsg_IMPORT_PROJ, OnImportFile)
 	ON_MESSAGE(RandomMsg_DELETE_PROJ,OnDeleteFile)
 	ON_MESSAGE(RandomMsg_FULLSCREEN_SPEECH, OnFullScreenSpeech)
+	ON_MESSAGE(RandomMsg_UpdateRandom_Interval,OnUpdateRandomInterval)
+	ON_BN_CLICKED(IDC_BUTTON_RESET, &CRandomNumToolsWindowsDlg::OnBnClickedButtonReset)
 END_MESSAGE_MAP()
 
 
@@ -257,7 +261,8 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	m_ftHead.CreateFont(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 	m_ftTag.CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 	m_ftTitle.CreateFont(30, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
-	
+
+#if 0
 	m_editAddName.SetFont(&m_ftHead);
 	m_editAddName.SetCaretPos(CPoint(12,148));
 	m_editAddName.ShowCaret();
@@ -275,7 +280,11 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	m_editDesignation.ShowCaret();
 	m_editDesignation.SetTip(KStrDesignationTip);
 	m_editDesignation.SetWindowTextW(KStrDesignationTip);
+#endif
 	
+	CreateDirectory(L"..\\data\\", NULL);
+	CreateDirectory(L"..\\随机结果\\", NULL);
+
 	m_btnAdd.EnableWindow(FALSE);
 	m_btnMute.EnableWindow(FALSE);
 	m_btnDesign.EnableWindow(FALSE);
@@ -324,8 +333,6 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 
 	m_strVersionTag = CommonFun::s2cs(gConfig.getTagName());
 	m_strVendorTitle = CommonFun::s2cs(gConfig.getVendorName());
-	if (L"" == m_strVendorTitle)
-		FormatStr::CFormatStr::Baluoteliz_MessageBox(L"点击配置按钮, 配置基本信息");
 
 	CMFCButton::EnableWindowsTheming(FALSE);
 
@@ -405,13 +412,14 @@ inline void CRandomNumToolsWindowsDlg::DrawClient(CDC *pDC)
 	pDC->FillSolidRect(rtClient.right / 2 - 200, 5, 400, 24, RGB(214, 219, 233));
 	pDC->SetBkColor(RGB(214, 219, 233));
 	pDC->SetTextColor(RGB(27, 41, 62));
-	pDC->TextOut(rtClient.Width() / 2 - 120,8,m_strVendorTitle,_tcslen(m_strVendorTitle));
+	pDC->TextOut(rtClient.left  + 120,10,m_strVendorTitle,_tcslen(m_strVendorTitle));
 
 	if (!m_strImprtProjName.IsEmpty()) {
 
+		CString strTemp = L"选中的项目：" + m_strImprtProjName;
 		pDC->SetBkColor(RGB(230, 231, 232));
 		pDC->SetTextColor(RGB(0, 122, 204));
-		pDC->TextOut(rtClient.left + 50, rtClient.top + 260, m_strImprtProjName, _tcslen(m_strImprtProjName));
+		pDC->TextOut(rtClient.left + 330, rtClient.top + 100, strTemp, _tcslen(strTemp));
 	}
 
 	pDC->SelectObject(&m_ftTag);
@@ -488,9 +496,9 @@ void CRandomNumToolsWindowsDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	GetClientRect(&rt);
 	ClientToScreen(&rt);
 	 
-	::SetWindowPos(m_hWnd,HWND_TOPMOST,rt.left, rt.top, rt.Width(), rt.Height(), TRUE);
-	rt.right = rt.left + 900;
-	rt.bottom = rt.top + 550;
+	::SetWindowPos(m_hWnd,NULL,rt.left, rt.top, rt.Width(), rt.Height(), TRUE);
+	rt.right = rt.left + 1280;
+	rt.bottom = rt.top + 720;
 	MoveWindow(&rt, TRUE);
 	CenterWindow();
 
@@ -505,8 +513,11 @@ void CRandomNumToolsWindowsDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	m_btnClose.SetBorderColor(RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233), RGB(214, 219, 233));
 	m_btnClose.SetBackImage(IDB_BITMAP_CLOSE, RGB(0xFF, 0x00, 0xFF));
 
+	//m_btnStart.MoveWindow(rt.Width() /2 - 400, rt.Height() -50 , 200, 24, TRUE);
+	//m_btnSure.MoveWindow(rt.Width()/2 + 100, rt.Height() - 50, 200, 24, TRUE);
+
 	if (m_pMainTextSpeechRender){
-		m_pMainTextSpeechRender->MoveWindow(rt.left + 344, rt.top + 72, 479, 393, TRUE);
+		m_pMainTextSpeechRender->MoveWindow(rt.left + 10, rt.top + 221, 1236, 414, TRUE);
 	}
 }
 
@@ -575,6 +586,7 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonFullscreen()
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 
 	CDlgFullScreenTextSpeech dlgFullScreenText;
+	m_pFullScreenTextSpeeckRender = &dlgFullScreenText;
 	INT_PTR nResponse =  dlgFullScreenText.DoModal();
 	if (IDOK == nResponse){
 
@@ -583,7 +595,7 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonFullscreen()
 
 	}
 
-	int i = 0;
+	m_pFullScreenTextSpeeckRender = nullptr;
 }
 
 
@@ -670,23 +682,26 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 	CFormatStr::Baluoteliz_WriteLog("%s", __FUNCTION__);
 	
 	if (m_pProjInstance && m_pProjInstance->RandomStr(m_StrHitName)) {
-		m_btnSure.EnableWindow(FALSE);
-		m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
-		SoundControl::playSoundHit();
-		m_btnStart.EnableWindow(TRUE);
-		m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
-		m_btnSure.Invalidate(TRUE);
-		m_btnStart.Invalidate(TRUE);
-
-		if (m_pMainTextSpeechRender)
-			m_pMainTextSpeechRender->btnChoose(m_StrHitName);
 
 #ifdef TTS_OLD
 		m_pThreadTTS->ResumeThread();
 #endif
 	}
-	else
+	else{
+		m_StrHitName = L"";
 		CFormatStr::Baluoteliz_MessageBox(L"项目数据为空，或者 所有的数据都已经随机出现过了");
+	}
+
+	m_btnSure.EnableWindow(FALSE);
+	m_btnSure.SwitchButtonStatus(CAGButton::AGBTN_DISABLE);
+	SoundControl::playSoundHit();
+	m_btnStart.EnableWindow(TRUE);
+	m_btnStart.SwitchButtonStatus(CAGButton::AGBTN_NORMAL);
+	m_btnSure.Invalidate(TRUE);
+	m_btnStart.Invalidate(TRUE);
+
+	if (m_pMainTextSpeechRender)
+		m_pMainTextSpeechRender->btnChoose(m_StrHitName);
 }
 
 void CRandomNumToolsWindowsDlg::OnBnClickedBtnClose()
@@ -768,4 +783,31 @@ LRESULT CRandomNumToolsWindowsDlg::OnFullScreenSpeech(WPARAM wParam, LPARAM lPar
 	}
 
 	return TRUE;
+}
+
+LRESULT CRandomNumToolsWindowsDlg::OnUpdateRandomInterval(WPARAM wParam, LPARAM lParam)
+{
+	DWORD dwInterval = wParam;
+	
+	if (m_pMainTextSpeechRender)
+		m_pMainTextSpeechRender->updateStartInterval(dwInterval);
+	
+	if (m_pFullScreenTextSpeeckRender)
+		m_pFullScreenTextSpeeckRender->updateStartInterval(dwInterval);
+
+	return TRUE;
+}
+
+void CRandomNumToolsWindowsDlg::OnBnClickedButtonReset()
+{
+	// TODO: Add your control notification handler code here
+	if (m_strImprtProjName.IsEmpty())
+		FormatStr::CFormatStr::Baluoteliz_MessageBox(L"需要先建项目.");
+
+	if (m_pProjInstance) {
+
+		int nres = m_pProjInstance->resetProj(m_strImprtProjName);
+		if (nres & CFileData::error_Ok)
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"重置成功");
+	}
 }

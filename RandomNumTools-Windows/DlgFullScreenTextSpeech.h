@@ -13,6 +13,8 @@ public:
 	CDlgFullScreenTextSpeech(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDlgFullScreenTextSpeech();
 
+	void updateStartInterval(DWORD dwInterval);
+
 // Dialog Data
 	enum { IDD = IDD_DIALOG_FullScreen_TextRender };
 

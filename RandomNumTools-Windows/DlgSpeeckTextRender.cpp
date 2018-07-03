@@ -51,10 +51,10 @@ BOOL CDlgSpeeckTextRender::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 	
-	m_fontRandom.CreateFont(150, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("ËÎÌו"));
+	m_fontRandom.CreateFont(84, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("ËÎÌו"));
 	SetBackgroundImage(IDB_BITMAP_MainTextRender);
 
-	m_dwStartInterval = CommonFun::str2int(gConfig.getChooseInterval());
+	m_dwStartInterval = CommonFun::str2int(gConfig.getRandomInterval());
 	if (0 == m_dwStartInterval)
 		m_dwStartInterval = 50;
 
@@ -87,7 +87,7 @@ void CDlgSpeeckTextRender::OnPaint()
 		dc.SetBkColor(RGB(172, 208, 233));
 		dc.SetTextColor(RGB(255, 255, 255));
 		int nCharLen = strlen(((CStringA)(m_strRandomName.GetBuffer())).GetBuffer());
-		int nOffset = 35 * nCharLen;
+		int nOffset = 22 * nCharLen;
 		dc.SetBkMode(TRANSPARENT);
 		dc.TextOut(rt.Width() / 2 - nOffset, rt.Height() / 2 - 50, m_strRandomName);
 		dc.SelectObject(defFont);
@@ -113,7 +113,7 @@ void CDlgSpeeckTextRender::OnPaint()
 		else
 			dc.SetTextColor(RGB(255,0,0));
 		int nCharLen = strlen(((CStringA)(m_strHitName.GetBuffer())).GetBuffer());
-		int nOffset = 35 * nCharLen;
+		int nOffset = 22 * nCharLen;
 		dc.SetBkMode(TRANSPARENT);
 		dc.TextOut(rt.Width() / 2 - nOffset, rt.Height() / 2 - 50, m_strHitName);
 		dc.SelectObject(defFont);
@@ -154,4 +154,13 @@ void CDlgSpeeckTextRender::btnChoose(const CString &strChoose)
 	m_bChooseRandom = true;
 	//m_bStartRandom = false;
 	m_strHitName = strChoose;
+}
+
+void CDlgSpeeckTextRender::updateStartInterval(DWORD dwInterval)
+{
+	if (dwInterval != m_dwStartInterval) {
+		KillTimer(Event_Main_Start);
+		SetTimer(Event_Main_Start, dwInterval, NULL);
+		m_dwStartInterval = dwInterval;
+	}
 }

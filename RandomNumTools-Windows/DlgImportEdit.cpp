@@ -32,6 +32,10 @@ void CDlgImportEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_STATIC_MAIN, m_AgLinkMain);
 	DDX_Control(pDX, IDC_STATIC_Mute, m_AgLinkMute);
 	DDX_Control(pDX, IDC_STATIC_Designation, m_AgDesignation);
+	DDX_Control(pDX, IDC_STATIC_EDIT_RROJNAME, m_staticProj);
+	DDX_Control(pDX, IDC_STATIC_EDIT_RANDOMFILE, m_staticMain);
+	DDX_Control(pDX, IDC_STATIC_EDIT_MUTEFILE, m_staticMute);
+	DDX_Control(pDX, IDC_STATIC_EDIT_RANDOM_HITFILE, m_staticDesigation);
 }
 
 BEGIN_MESSAGE_MAP(CDlgImportEdit, CDialogEx)
@@ -66,14 +70,37 @@ inline void CDlgImportEdit::initCtrl()
 	m_pProjInstance->getVectorFiles(m_strProjName, vecTemp);
 	int nCount = vecTemp.size();
 
+	int nMainIndex = 0; int nDesgnationIndex = 0; int nMuteIndex = 0;
+	vecWStrIt itVec = find(vecTemp.begin(), vecTemp.end(), L"mute.dat");
+	if (vecTemp.end() != itVec)
+		nMuteIndex = itVec - vecTemp.begin();
+	itVec = find(vecTemp.begin(), vecTemp.end(), L"designation.dat");
+	if (vecTemp.end() != itVec)
+		nDesgnationIndex = itVec - vecTemp.begin();
+	itVec = find(vecTemp.begin(), vecTemp.end(), m_strProjName + L".dat");
+	if (vecTemp.end() != itVec)
+		nMainIndex = itVec - vecTemp.begin();
+
 	if (nCount) {
 
+		m_staticProj.ShowWindow(SW_HIDE);
+		m_staticMain.MoveWindow(rt.Width() / 2 - 200, rt.top + 100, 100, 30, TRUE);
 		m_AgLinkMain.MoveWindow(rt.Width() / 2 - 100, rt.top + 100, 200, 30, TRUE);
-		m_AgLinkMain.SetWindowTextW(vecTemp[0]);
-		m_AgLinkMute.MoveWindow(rt.Width() / 2 - 100, rt.top + 150, 200, 30, TRUE);
-		m_AgLinkMute.SetWindowTextW(vecTemp[1]);
+		CString strName = vecTemp[nMainIndex];
+		strName = strName.Mid(0, strName.ReverseFind(L'.'));
+		m_AgLinkMain.SetWindowTextW(strName);
+
+		m_staticDesigation.MoveWindow(rt.Width() / 2 - 200, rt.top + 200, 100, 30, TRUE);
 		m_AgDesignation.MoveWindow(rt.Width() / 2 - 100, rt.top + 200, 200, 30, TRUE);
-		m_AgDesignation.SetWindowTextW(vecTemp[2]);
+		strName = vecTemp[nDesgnationIndex];
+		strName = strName.Mid(0, strName.ReverseFind(L'.'));
+		m_AgDesignation.SetWindowTextW(strName);
+
+		m_staticMute.MoveWindow(rt.Width() / 2 - 200, rt.top + 150, 100, 30, TRUE);
+		m_AgLinkMute.MoveWindow(rt.Width() / 2 - 100, rt.top + 150, 200, 30, TRUE);
+		strName = vecTemp[nMuteIndex];
+		strName = strName.Mid(0, strName.ReverseFind(L'.'));
+		m_AgLinkMute.SetWindowTextW(strName);
 
 		m_AgLinkMute.SetBackColor(RGB(240, 240, 240));
 		m_AgLinkMain.SetBackColor(RGB(240, 240, 240));
@@ -85,12 +112,13 @@ inline void CDlgImportEdit::initCtrl()
 
 		CString strPrefixPath = m_pProjInstance->getPrefixPath();
 		CString strFormat;
-		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[0]);
+		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[nMainIndex]);
 		m_AgLinkMain.SetCmd(strFormat);
-		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[1]);
-		m_AgLinkMute.SetCmd(strFormat);
-		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[2]);
+		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[nDesgnationIndex]);
 		m_AgDesignation.SetCmd(strFormat);
+		strFormat.Format(_T("%s%s\\%s"), strPrefixPath, m_strProjName, vecTemp[nMuteIndex]);
+		m_AgLinkMute.SetCmd(strFormat);
+
 	}
 }
 
@@ -107,10 +135,12 @@ void CDlgImportEdit::OnPaint()
 	GetClientRect(&rtClient);
 	CFont* defFont = dc.SelectObject(&m_fontTitle);
 
-	dc.FillSolidRect(rtClient.left + 50, 45, 200, 24, RGB(240, 240, 240));
+	CString strTemp;
+	strTemp.Format(L"ÏîÄ¿Ãû³Æ: %s", m_strProjName);
+	dc.FillSolidRect(rtClient.left + 30, 45, 200, 24, RGB(240, 240, 240));
 	dc.SetBkColor(RGB(240, 240, 240));
 	dc.SetTextColor(RGB(128, 128, 225));
-	dc.TextOut(rtClient.left +  50, 45, m_strProjName, _tcslen(m_strProjName));
+	dc.TextOut(rtClient.left + 30, 45, strTemp, _tcslen(strTemp));
 
 	dc.SelectObject(defFont);
 }

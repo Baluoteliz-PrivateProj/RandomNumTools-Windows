@@ -10,6 +10,7 @@
 
 class CProjDataInstance;
 class CDlgSpeeckTextRender;
+class CDlgFullScreenTextSpeech;
 // CRandomNumToolsWindowsDlg dialog
 class CRandomNumToolsWindowsDlg : public CDialogEx
 {
@@ -62,6 +63,7 @@ protected:
 	afx_msg LRESULT OnImportFile(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnDeleteFile(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnFullScreenSpeech(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT OnUpdateRandomInterval(WPARAM wParam, LPARAM lParam);
 
 	static UINT ThreadTTSProc(LPVOID param);
 
@@ -77,11 +79,12 @@ private:
 	CAGButton   m_btnImport;
 	CAGButton   m_btnFullScreen;
 	CAGButton   m_btnConfig;
+	CAGButton   m_btnReset;
 	CAGButton   m_btnAdd;
 	CAGButton   m_btnMute;
 	CAGButton   m_btnDesign;
 
-	CAGEdit	m_editAddName;
+	CEdit	m_editAddName;
 	CAGEdit    m_editMuteName;
 	CAGEdit    m_editDesignation;
 
@@ -99,4 +102,7 @@ private:
 	CProjDataInstance* m_pProjInstance;
 
 	CDlgSpeeckTextRender* m_pMainTextSpeechRender;
+	CDlgFullScreenTextSpeech* m_pFullScreenTextSpeeckRender;
+public:
+	afx_msg void OnBnClickedButtonReset();
 };

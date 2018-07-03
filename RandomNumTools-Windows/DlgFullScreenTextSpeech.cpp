@@ -7,6 +7,7 @@
 using namespace CPlusBaluoteli;
 using namespace CPlusBaluoteli::control;
 using namespace CPlusBaluoteli::util;
+using namespace CPlusBaluoteli::FormatStr;
 #include "DlgFullScreenTextSpeech.h"
 #include "afxdialogex.h"
 
@@ -49,13 +50,13 @@ BOOL CDlgFullScreenTextSpeech::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	m_fontRandom.CreateFont(200, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("宋体"));
+	m_fontRandom.CreateFont(94, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("宋体"));
 	m_fontList.CreateFont(20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 	m_fontOperatorNote.CreateFont(40, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 
 	SetBackgroundImage(IDB_BITMAP_FULLSCREENRENDER_768);
 
-	m_dwStartInterval = CommonFun::str2int(gConfig.getChooseInterval());
+	m_dwStartInterval = CommonFun::str2int(gConfig.getRandomInterval());
 	if (0 == m_dwStartInterval)
 		m_dwStartInterval = 50;
 
@@ -91,7 +92,7 @@ void CDlgFullScreenTextSpeech::OnPaint()
 		dc.SetBkColor(RGB(56, 250, 231));
 		dc.SetTextColor(RGB(255, 255, 255));
 		int nCharLen = strlen(((CStringA)(m_strRandomName.GetBuffer())).GetBuffer());
-		int nOffset = 50 * nCharLen; 
+		int nOffset = 24 * nCharLen; 
 		dc.SetBkMode(TRANSPARENT);
 		dc.TextOut(rt.Width() / 2 - nOffset, rt.Height() / 2 - 50, m_strRandomName);
 		dc.SelectObject(defFont);
@@ -117,7 +118,7 @@ void CDlgFullScreenTextSpeech::OnPaint()
 		else
 			dc.SetTextColor(RGB(255, 0, 0));
 		int nCharLen = strlen(((CStringA)(m_strHitName.GetBuffer())).GetBuffer());
-		int nOffset = 50 * nCharLen;
+		int nOffset = 24 * nCharLen;
 		dc.SetBkMode(TRANSPARENT);
 		dc.TextOut(rt.Width() / 2 - nOffset, rt.Height() / 2 - 50, m_strHitName);
 		dc.SelectObject(defFont);
@@ -191,19 +192,25 @@ BOOL CDlgFullScreenTextSpeech::PreTranslateMessage(MSG* pMsg)
 		}
 		else if (m_bStartRandom && !m_bChooseRandom) {
 			m_bChooseRandom = true;
-			if (m_pProjInstance)
-				m_pProjInstance->RandomStr(m_strHitName);
+			if (m_pProjInstance) {
+				if (!m_pProjInstance->RandomStr(m_strHitName)) {
+
+					m_strHitName = L"";
+					CFormatStr::Baluoteliz_MessageBox(L"项目数据为空，或者 所有的数据都已经随机出现过了");
+				}
+				else{
+					Random_FULLSCREEN_SHOWRESULT ShowListTemp;
+					ShowListTemp.nIndex = m_vecChoose.size() + 1;
+					ShowListTemp.strResult = m_strHitName;
+					ShowListTemp.strData = CommonFun::getTimeStr();
+					m_vecChoose.push_back(ShowListTemp);
+				}
+			}
 			LPRANDOM_FULLSCREEN_SPEECH lpData = new RANDOM_FULLSCREEN_SPEECH;
 			m_bShowListChoose = true;
 			lpData->strSpeechText = m_strHitName;
 			SoundControl::playSoundHit();
 			::SendMessage(theApp.GetMainWnd()->m_hWnd, RandomMsg_FULLSCREEN_SPEECH, (WPARAM)lpData, NULL);
-
-			Random_FULLSCREEN_SHOWRESULT ShowListTemp;
-			ShowListTemp.nIndex = m_vecChoose.size() + 1;
-			ShowListTemp.strResult = m_strHitName;
-			ShowListTemp.strData = CommonFun::getTimeStr();
-			m_vecChoose.push_back(ShowListTemp);
 		}
 		else if (!m_bStartRandom && m_bChooseRandom) {
 			m_bStartRandom = true;
@@ -221,4 +228,14 @@ void CDlgFullScreenTextSpeech::OnClose()
 	KillTimer(Event_FullScreen_Choose);
 
 	CDialogEx::OnCancel();
+}
+
+void CDlgFullScreenTextSpeech::updateStartInterval(DWORD dwInterval)
+{
+	if (m_dwStartInterval != dwInterval) {
+
+		KillTimer(Event_FulllScreen_Start);
+		SetTimer(Event_FulllScreen_Start, dwInterval,NULL);
+		m_dwStartInterval = dwInterval;
+	}
 }

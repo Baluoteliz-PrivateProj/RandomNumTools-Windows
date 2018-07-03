@@ -35,6 +35,11 @@ private:
 	CAGHyperLink m_AgLinkMute;
 	CAGHyperLink m_AgDesignation;
 
+	CStatic m_staticProj;
+	CStatic m_staticDesigation;
+	CStatic m_staticMute;
+	CStatic m_staticMain;
+
 	CString m_strProjName;
 	CProjDataInstance* m_pProjInstance;
 };

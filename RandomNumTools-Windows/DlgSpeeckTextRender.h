@@ -12,7 +12,8 @@ public:
 	virtual ~CDlgSpeeckTextRender();
 
 	void btnRandom();
-	void btnChoose(const CString &strChoose);
+	void btnChoose(const CString &strChoose);	
+	void updateStartInterval(DWORD dwInterval);
 
 // Dialog Data
 	enum { IDD = IDD_DIALOG_SPEECHTEXT_RENDER };

@@ -88,6 +88,7 @@ protected:
 	inline int getManiDataLines();
 	
 	inline int readAllStrEx(eFileType eType);
+	inline int writeResult(const std::string &str);
 
 private:
 
@@ -115,6 +116,8 @@ private:
 	CRandom m_randomMain;
 	int m_errorType;
 	CLock m_lock;
+
+	CFileIO m_FileProjResult;
 };
 
 class CProjData
@@ -184,10 +187,11 @@ public:
 
 	CString getPrefixPath();
 	void getProjData(std::map<CString,std::vector<CString>> &mapData);
-	void insertProjDataItem(LPRANDOM_NEW_PROJ lpData);
+	bool insertProjDataItem(LPRANDOM_NEW_PROJ lpData);
 	void deleteItem(const CString strParam);
 	void getVectorFiles(const CString strParma,std::vector<CString> &vecTemp);
 	int ImportProj(const CString &strProjName);
+	int resetProj(const CString &strProjName);
 
 	void addStr(const std::string &str);
 	void muteStr(const std::string &str);
