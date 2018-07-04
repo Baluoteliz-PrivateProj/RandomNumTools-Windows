@@ -93,6 +93,9 @@
     <ClInclude Include="DlgFullScreenTextSpeech.h">
       <Filter>Dlg</Filter>
     </ClInclude>
+    <ClInclude Include="AGListBox.h">
+      <Filter>Ctrl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RandomNumTools-Windows.cpp">
@@ -145,6 +148,9 @@
     </ClCompile>
     <ClCompile Include="DlgSpeeckTextRender.cpp">
       <Filter>Dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="AGListBox.cpp">
+      <Filter>Ctrl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

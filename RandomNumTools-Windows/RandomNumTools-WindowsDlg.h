@@ -6,6 +6,7 @@
 #include "AGButton.h"
 #include "AGEdit.h"
 #include "AGComboBox.h"
+#include "AGListBox.h"
 #include "TTSWrapper.h"
 
 class CProjDataInstance;
@@ -64,8 +65,12 @@ protected:
 	afx_msg LRESULT OnDeleteFile(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnFullScreenSpeech(WPARAM wParam,LPARAM lParam);
 	afx_msg LRESULT OnUpdateRandomInterval(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnUpdateRandomListBox(WPARAM wParam,LPARAM lParam);
 
 	static UINT ThreadTTSProc(LPVOID param);
+
+	inline void updateCandidateListBoxFirst();
+	inline void updateCandidateListBox(const CString &str);
 
 private:
 
@@ -73,6 +78,7 @@ private:
 	CFont       m_ftHead;
 	CFont       m_ftTitle;
 	CFont       m_ftTag;
+	HBRUSH  m_hbrush;
 
 	CAGButton	m_btnStart;
 	CAGButton   m_btnSure;
@@ -87,6 +93,7 @@ private:
 	CEdit	m_editAddName;
 	CAGEdit    m_editMuteName;
 	CAGEdit    m_editDesignation;
+	CListBox   m_listRandom;
 
 	CAGButton  m_btnMin;
 	CAGButton  m_btnClose;
@@ -103,6 +110,10 @@ private:
 
 	CDlgSpeeckTextRender* m_pMainTextSpeechRender;
 	CDlgFullScreenTextSpeech* m_pFullScreenTextSpeeckRender;
+
+	std::vector<std::string> m_vecCandidateList;
+
 public:
 	afx_msg void OnBnClickedButtonReset();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };

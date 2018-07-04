@@ -70,9 +70,9 @@ inline void CDlgConfig::initCtrl()
 	int nPosY = rtParent.top + rtParent.Height() / 2 - rtConfig.Height() / 2;
 	MoveWindow(nPosX, nPosY, rtConfig.Width(), rtConfig.Height(), TRUE);
 
-	m_sliderCtrl.SetRange(1, 50);
+	m_sliderCtrl.SetRange(1, 5);
 	DWORD dwRandomInterval = util::CommonFun::str2int(gConfig.getRandomInterval());
-	m_sliderCtrl.SetPos(dwRandomInterval / 20);
+	m_sliderCtrl.SetPos(dwRandomInterval / 10);
 	
 	CMFCButton::EnableWindowsTheming(FALSE);
 }
@@ -100,7 +100,7 @@ void CDlgConfig::OnBnClickedButtonSave()
 
 	DWORD dwTimeInterval = 0;
 	int nPos = m_sliderCtrl.GetPos();
-	dwTimeInterval = nPos * 20;
+	dwTimeInterval = nPos * 10;
 
 	::PostMessage(theApp.GetMainWnd()->m_hWnd, RandomMsg_UpdateRandom_Interval, WPARAM(dwTimeInterval), NULL);
 
@@ -127,7 +127,7 @@ void CDlgConfig::OnNMCustomdrawSliderRandominterval(NMHDR *pNMHDR, LRESULT *pRes
 
 	DWORD dwTimeInterval = 0;
 	int nPos = m_sliderCtrl.GetPos();
-	dwTimeInterval = nPos * 20;
+	dwTimeInterval = nPos * 10;
 
 	gConfig.setRandomInterval(util::CommonFun::int2str(dwTimeInterval));
 }

@@ -116,6 +116,7 @@ void CRandomNumToolsWindowsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_MIN, m_btnMin);
 	DDX_Control(pDX, IDC_BUTTON_CLOSE, m_btnClose);
 	DDX_Control(pDX, IDC_BUTTON_RESET, m_btnReset);
+	DDX_Control(pDX, IDC_LIST_RandomLIst, m_listRandom);
 }
 
 BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
@@ -140,6 +141,8 @@ BEGIN_MESSAGE_MAP(CRandomNumToolsWindowsDlg, CDialogEx)
 	ON_MESSAGE(RandomMsg_FULLSCREEN_SPEECH, OnFullScreenSpeech)
 	ON_MESSAGE(RandomMsg_UpdateRandom_Interval,OnUpdateRandomInterval)
 	ON_BN_CLICKED(IDC_BUTTON_RESET, &CRandomNumToolsWindowsDlg::OnBnClickedButtonReset)
+	ON_MESSAGE(RandomMsg_UpdateRandom_CandidateList,OnUpdateRandomListBox)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
@@ -261,6 +264,7 @@ inline void CRandomNumToolsWindowsDlg::initCtrl()
 	m_ftHead.CreateFont(15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 	m_ftTag.CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
 	m_ftTitle.CreateFont(30, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, _T("Arial"));
+	m_hbrush = CreateSolidBrush(RGB(255, 0, 0));
 
 #if 0
 	m_editAddName.SetFont(&m_ftHead);
@@ -517,8 +521,10 @@ void CRandomNumToolsWindowsDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	//m_btnSure.MoveWindow(rt.Width()/2 + 100, rt.Height() - 50, 200, 24, TRUE);
 
 	if (m_pMainTextSpeechRender){
-		m_pMainTextSpeechRender->MoveWindow(rt.left + 10, rt.top + 221, 1236, 414, TRUE);
+		m_pMainTextSpeechRender->MoveWindow(rt.left + 10, rt.top + 221, 1050, 414, TRUE);
 	}
+
+	m_listRandom.MoveWindow(rt.left + 1070, rt.top + 221, 200, 414, TRUE);
 }
 
 void CRandomNumToolsWindowsDlg::OnTimer(UINT_PTR nIDEvent)
@@ -622,7 +628,11 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonAdd()
 		m_editAddName.GetWindowTextW(strParam);
 		m_editAddName.SetWindowTextW(L"");
 		std::string strName = CommonFun::cs2s(strParam);
-		m_pProjInstance->addStr(strName);
+		if (m_pProjInstance->addStr(strName)) {
+
+			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"添加成功");
+			updateCandidateListBox(strParam);
+		}
 	}
 }
 
@@ -683,6 +693,7 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonSure()
 	
 	if (m_pProjInstance && m_pProjInstance->RandomStr(m_StrHitName)) {
 
+		updateCandidateListBox(m_StrHitName);
 #ifdef TTS_OLD
 		m_pThreadTTS->ResumeThread();
 #endif
@@ -742,6 +753,7 @@ LRESULT CRandomNumToolsWindowsDlg::OnImportFile(WPARAM wParam, LPARAM lParam)
 		m_btnStart.EnableWindow(TRUE);
 		//m_btnFullScreen.EnableWindow(TRUE);
 
+		updateCandidateListBoxFirst();
 		Invalidate(TRUE);
 
 		delete lpData; lpData = nullptr;
@@ -798,6 +810,44 @@ LRESULT CRandomNumToolsWindowsDlg::OnUpdateRandomInterval(WPARAM wParam, LPARAM 
 	return TRUE;
 }
 
+LRESULT CRandomNumToolsWindowsDlg::OnUpdateRandomListBox(WPARAM wParam, LPARAM lParam)
+{
+	LPRANDOM_UPDATE_CANDIDATELILST lpData = (LPRANDOM_UPDATE_CANDIDATELILST)wParam;
+	if (lpData) {
+		
+		updateCandidateListBox(lpData->strRandom);
+		delete lpData; 
+		lpData = nullptr;
+	}
+
+	return TRUE;
+}
+
+inline void CRandomNumToolsWindowsDlg::updateCandidateListBoxFirst()
+{
+	m_listRandom.ResetContent();
+	m_vecCandidateList.clear();
+
+	if (m_pProjInstance)
+		m_pProjInstance->getCandidateList(m_vecCandidateList);
+
+	for (vecStrIt it = m_vecCandidateList.begin(); m_vecCandidateList.end() != it; it++)	{
+
+		CString strItem = CommonFun::s2cs(*it);
+		m_listRandom.AddString(strItem);
+	}
+}
+
+inline void CRandomNumToolsWindowsDlg::updateCandidateListBox(const CString &str)
+{
+	int nFindIndex = m_listRandom.FindStringExact(0, str);
+	if (CB_ERR != nFindIndex) {
+		m_listRandom.DeleteString(nFindIndex);
+	}
+	else
+		m_listRandom.AddString(str);
+}
+
 void CRandomNumToolsWindowsDlg::OnBnClickedButtonReset()
 {
 	// TODO: Add your control notification handler code here
@@ -807,7 +857,26 @@ void CRandomNumToolsWindowsDlg::OnBnClickedButtonReset()
 	if (m_pProjInstance) {
 
 		int nres = m_pProjInstance->resetProj(m_strImprtProjName);
-		if (nres & CFileData::error_Ok)
+		if (nres & CFileData::error_Ok) {
+
 			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"重置成功");
+			updateCandidateListBoxFirst();
+		}
 	}
+}
+
+
+HBRUSH CRandomNumToolsWindowsDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	if (IDC_LIST_RandomLIst == nCtlColor){
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(RGB(255, 255, 255));
+		return m_hbrush;
+	}
+	else
+		return CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	// TODO:  Change any attributes of the DC here
+
+	// TODO:  Return a different brush if the default is not desired
 }

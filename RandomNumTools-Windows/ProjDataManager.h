@@ -79,6 +79,8 @@ public:
 	bool mute(const std::string &str, eFileType eType = eFileType::eType_Mute);
 	bool designation(const std::string &str,eFileType eType = eFileType::eType_Designation);
 
+	bool getCandidateList(std::vector<std::string> &vecList);
+
 protected:
 	inline bool loadFile();
 	inline void unloadFile();
@@ -193,11 +195,14 @@ public:
 	int ImportProj(const CString &strProjName);
 	int resetProj(const CString &strProjName);
 
-	void addStr(const std::string &str);
+	bool addStr(const std::string &str);
 	void muteStr(const std::string &str);
 	void designationStr(const std::string &str);
 	bool RandomStr(CString &str);
 	bool RandomStrRepeatable(CString &str);
+
+	bool getCandidateList(std::vector<std::string> &vecList);
+	void refreshProjDir();
 
 private:
 	int LoadProjData();

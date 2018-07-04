@@ -71,7 +71,6 @@ BOOL CDlgSpeeckTextRender::OnInitDialog()
 void CDlgSpeeckTextRender::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialogEx::OnShowWindow(bShow, nStatus);
-
 }
 
 void CDlgSpeeckTextRender::OnPaint()
@@ -85,7 +84,7 @@ void CDlgSpeeckTextRender::OnPaint()
 
 		CFont* defFont = dc.SelectObject(&m_fontRandom);
 		dc.SetBkColor(RGB(172, 208, 233));
-		dc.SetTextColor(RGB(255, 255, 255));
+		dc.SetTextColor(RGB(0, 0, 0));
 		int nCharLen = strlen(((CStringA)(m_strRandomName.GetBuffer())).GetBuffer());
 		int nOffset = 22 * nCharLen;
 		dc.SetBkMode(TRANSPARENT);
@@ -109,7 +108,7 @@ void CDlgSpeeckTextRender::OnPaint()
 		CFont* defFont = dc.SelectObject(&m_fontRandom);
 		dc.SetBkColor(RGB(172, 208, 233));
 		if (nCount1 % 2)
-			dc.SetTextColor(RGB(255, 255, 255));
+			dc.SetTextColor(RGB(0, 0, 0));
 		else
 			dc.SetTextColor(RGB(255,0,0));
 		int nCharLen = strlen(((CStringA)(m_strHitName.GetBuffer())).GetBuffer());

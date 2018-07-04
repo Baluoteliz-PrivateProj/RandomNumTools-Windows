@@ -450,6 +450,20 @@ bool CFileData::designation(const std::string &str, eFileType eType /*= eFileTyp
 	}
 }
 
+bool CFileData::getCandidateList(std::vector<std::string> &vecList)
+{
+	vecList.assign(m_vecMainData.begin(), m_vecMainData.end());
+
+	for (vecStrIte itTemp = vecList.begin(); vecList.end() != itTemp; itTemp++) {
+		vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), *itTemp);
+		if (m_vecMuteData.end() != itMute) {
+			itTemp = vecList.erase(itTemp);
+		}
+	}
+
+	return true;
+}
+
 bool CFileData::loadFile()
 {
 	bool bReturn = false;
@@ -1164,11 +1178,10 @@ int CProjDataInstance::resetProj(const CString &strProjName)
 		return CFileData::error_Random_NoValidProj;
 }
 
-void CProjDataInstance::addStr(const std::string&str)
+bool CProjDataInstance::addStr(const std::string&str)
 {
 	if (m_pFileData)
-		if (m_pFileData->add(str, CFileData::eType_Main))
-			FormatStr::CFormatStr::Baluoteliz_MessageBox(L"Ìí¼Ó³É¹¦");
+		return (m_pFileData->add(str, CFileData::eType_Main));
 }
 
 void CProjDataInstance::muteStr(const std::string &str)
@@ -1205,4 +1218,16 @@ bool CProjDataInstance::RandomStrRepeatable(CString &str)
 
 		return !(bRes & CFileData::error_DataFile_Empty);
 	}
+}
+
+bool CProjDataInstance::getCandidateList(std::vector<std::string> &vecList)
+{
+	if (m_pFileData)
+		return m_pFileData->getCandidateList(vecList);
+}
+
+void CProjDataInstance::refreshProjDir()
+{
+	m_mapProject.clear();
+	LoadProjData();
 }

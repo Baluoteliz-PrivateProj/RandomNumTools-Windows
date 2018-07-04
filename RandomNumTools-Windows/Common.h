@@ -5,7 +5,7 @@
 
 namespace Random {
 
-	const TCHAR* const KStrImportFile = _T("新建");
+	const TCHAR* const KStrImportFile = _T("选择项目");
 	const TCHAR* const KStrFullScreen = _T("全屏");
 	const TCHAR* const KStrConfig = _T("配置");
 
@@ -77,6 +77,11 @@ namespace Random {
 		CString strResult;
 	}Random_FULLSCREEN_SHOWRESULT, *PRandom_FULLSCREEN_SHOWRESULT, *LPRandom_FULLSCREEN_SHOWRESULT;
 
+	typedef struct eTagRandom_Update_CandidateList
+	{
+		CString strRandom;
+	}RANDOM_UPDATE_CANDIDATELILST, *PRANDOM_UPDATE_CANDIDATELILST, *LPRANDOM_UPDATE_CANDIDATELILST;
+
 	enum eTagRandomMsg
 	{
 		RandomMsg_NULL = WM_USER,
@@ -85,6 +90,7 @@ namespace Random {
 		RandomMsg_DELETE_PROJ,
 		RandomMsg_FULLSCREEN_SPEECH,
 		RandomMsg_UpdateRandom_Interval,
+		RandomMsg_UpdateRandom_CandidateList,
 
 
 		Random_KNOWN = WM_USER +0xff,

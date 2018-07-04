@@ -73,7 +73,7 @@ void CDlgFullScreenTextSpeech::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	int nWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 	int nHeight = GetSystemMetrics(SM_CYFULLSCREEN);
-	if (1080 == nHeight)
+	if (1920 == nWidth)
 		SetBackgroundImage(IDB_BITMAP_FullScreenRender);
 
 	MoveWindow(0, 0, nWidth, nHeight, TRUE);
@@ -199,6 +199,12 @@ BOOL CDlgFullScreenTextSpeech::PreTranslateMessage(MSG* pMsg)
 					CFormatStr::Baluoteliz_MessageBox(L"项目数据为空，或者 所有的数据都已经随机出现过了");
 				}
 				else{
+					LPRANDOM_UPDATE_CANDIDATELILST lpData = new RANDOM_UPDATE_CANDIDATELILST;
+					if (lpData) {
+						lpData->strRandom = m_strHitName;
+						::PostMessage(theApp.GetMainWnd()->m_hWnd, RandomMsg_UpdateRandom_CandidateList, WPARAM(lpData), NULL);
+					}
+
 					Random_FULLSCREEN_SHOWRESULT ShowListTemp;
 					ShowListTemp.nIndex = m_vecChoose.size() + 1;
 					ShowListTemp.strResult = m_strHitName;

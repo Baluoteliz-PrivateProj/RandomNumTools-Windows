@@ -39,6 +39,7 @@ private:
 	CAGButton m_agBtnEdit;
 	CAGButton m_agBtnDelete;
 	CButton m_btnImport;//sure
+	CButton m_btnRefresh;
 
 	CAGListCtrl m_ctrlAllData;
 
@@ -55,4 +56,5 @@ public:
 	afx_msg void OnNMDBlickListProjData(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg LRESULT OnUpdataListCtrl(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnBnClickedButtonImportproj();
+	afx_msg void OnBnClickedButtonRefresh();
 };

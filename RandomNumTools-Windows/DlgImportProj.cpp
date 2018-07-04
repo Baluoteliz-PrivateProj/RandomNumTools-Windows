@@ -38,6 +38,7 @@ void CDlgImportProj::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_PROJ_DATA, m_ctrlAllData);
 	DDX_Control(pDX, IDC_BUTTON_SURE, m_btnImport);
 	DDX_Control(pDX, IDC_BUTTON_IMPORTPROJ, m_agImportDir);
+	DDX_Control(pDX, IDC_BUTTON_REFRESH, m_btnRefresh);
 }
 
 
@@ -53,6 +54,7 @@ BEGIN_MESSAGE_MAP(CDlgImportProj, CDialogEx)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_PROJ_DATA, &CDlgImportProj::OnNMDBlickListProjData)
 	ON_MESSAGE(RandomMsg_UPDATA_LISTCTRL, &CDlgImportProj::OnUpdataListCtrl)
 	ON_BN_CLICKED(IDC_BUTTON_IMPORTPROJ, &CDlgImportProj::OnBnClickedButtonImportproj)
+	ON_BN_CLICKED(IDC_BUTTON_REFRESH, &CDlgImportProj::OnBnClickedButtonRefresh)
 END_MESSAGE_MAP()
 
 
@@ -390,4 +392,33 @@ void CDlgImportProj::OnBnClickedButtonImportproj()
 	}
 	else
 		AfxMessageBox(L"无效的目录，请重新选择");
+}
+
+
+void CDlgImportProj::OnBnClickedButtonRefresh()
+{
+	// TODO: Add your control notification handler code here
+	
+	if (m_pProjDataInstance) {
+
+		m_ctrlAllData.DeleteAllItems();
+		m_nSelectItem = -1;
+		m_strSelectItemText = L"";
+
+		m_pProjDataInstance->refreshProjDir();
+
+		m_pProjDataInstance = CProjDataInstance::getInstance();
+		mapWStrVec mapData;
+		m_pProjDataInstance->getProjData(mapData);
+		int nRow = 0;
+		for (mapWStrVecIt itProj = mapData.begin(); mapData.end() != itProj; itProj++) {
+			nRow = m_ctrlAllData.InsertItem(nRow, CommonFun::int2CS(nRow + 1));
+			m_ctrlAllData.SetItemText(nRow, 1, itProj->first);
+			int nSubCount = itProj->second.size();
+			m_ctrlAllData.SetItemText(nRow, 2, CommonFun::int2CS(nSubCount));
+			nRow++;
+		}
+	}
+
+	Invalidate(TRUE);
 }
