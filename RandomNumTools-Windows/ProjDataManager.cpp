@@ -454,11 +454,13 @@ bool CFileData::getCandidateList(std::vector<std::string> &vecList)
 {
 	vecList.assign(m_vecMainData.begin(), m_vecMainData.end());
 
-	for (vecStrIte itTemp = vecList.begin(); vecList.end() != itTemp; itTemp++) {
+	for (vecStrIte itTemp = vecList.begin(); vecList.end() != itTemp;) {
 		vecStrIte itMute = find(m_vecMuteData.begin(), m_vecMuteData.end(), *itTemp);
 		if (m_vecMuteData.end() != itMute) {
 			itTemp = vecList.erase(itTemp);
 		}
+		else
+			itTemp++;
 	}
 
 	return true;

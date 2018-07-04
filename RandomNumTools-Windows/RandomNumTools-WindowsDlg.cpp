@@ -178,6 +178,17 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	{
+		//
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		if (st.wDay >= 10 || st.wMonth > 7) {
+			AfxMessageBox(L"该软件已经过了试用期,请联系作者购买正版");
+			PostQuitMessage(0);
+			return FALSE;
+		}
+	}
+
 #if 0
 
 	std::string mainbuffer;
@@ -204,7 +215,7 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 	int nWritten = fwrite("王猛\r\n", 1, 6, pFile);
 	fclose(pFile);
 #endif
-	
+
 #if 0
 	CFileData filedata("..\\data\\延安军事会议\\延安军事会议.dat", "..\\data\\延安军事会议\\mute.dat", "..\\data\\延安军事会议\\designation.dat");
 	BOOL bres = filedata.dataCheckSelf();
@@ -249,6 +260,7 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 #if 0
 	CProjDataInstance *pInstance = CProjDataInstance::getInstance();
 #endif
+	
 
 	SetBackgroundImage(IDB_BITMAP_MAIN);	
 	initCtrl();
