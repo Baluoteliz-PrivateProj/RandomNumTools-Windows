@@ -182,7 +182,7 @@ BOOL CRandomNumToolsWindowsDlg::OnInitDialog()
 		//
 		SYSTEMTIME st;
 		GetSystemTime(&st);
-		if (st.wDay >= 10 || st.wMonth > 7) {
+		if (false && (st.wDay >= 10 || st.wMonth > 7)) {
 			AfxMessageBox(L"该软件已经过了试用期,请联系作者购买正版");
 			PostQuitMessage(0);
 			return FALSE;

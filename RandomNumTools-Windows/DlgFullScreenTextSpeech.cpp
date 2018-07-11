@@ -90,7 +90,7 @@ void CDlgFullScreenTextSpeech::OnPaint()
 
 		CFont* defFont = dc.SelectObject(&m_fontRandom);
 		dc.SetBkColor(RGB(56, 250, 231));
-		dc.SetTextColor(RGB(255, 255, 255));
+		dc.SetTextColor(RGB(255, 0, 0));
 		int nCharLen = strlen(((CStringA)(m_strRandomName.GetBuffer())).GetBuffer());
 		int nOffset = 24 * nCharLen; 
 		dc.SetBkMode(TRANSPARENT);
@@ -114,7 +114,7 @@ void CDlgFullScreenTextSpeech::OnPaint()
 		CFont* defFont = dc.SelectObject(&m_fontRandom);
 		dc.SetBkColor(RGB(56, 250, 231));
 		if (nCount1 % 2)
-			dc.SetTextColor(RGB(255, 255, 255));
+			dc.SetTextColor(RGB(255, 0, 0));
 		else
 			dc.SetTextColor(RGB(255, 0, 0));
 		int nCharLen = strlen(((CStringA)(m_strHitName.GetBuffer())).GetBuffer());
@@ -123,6 +123,7 @@ void CDlgFullScreenTextSpeech::OnPaint()
 		dc.TextOut(rt.Width() / 2 - nOffset, rt.Height() / 2 - 50, m_strHitName);
 		dc.SelectObject(defFont);
 
+		KillTimer(Event_FullScreen_Choose);
 		FormatStr::CFormatStr::Baluoteliz_OutDebugStr(L"ChooseRandom [%d] [%d]: %s\n", GetTickCount(), nCount1, m_strHitName);
 	}
 
@@ -195,6 +196,7 @@ BOOL CDlgFullScreenTextSpeech::PreTranslateMessage(MSG* pMsg)
 			if (m_pProjInstance) {
 				if (!m_pProjInstance->RandomStr(m_strHitName)) {
 
+					SetTimer(Event_FullScreen_Choose,1000,NULL);
 					m_strHitName = L"";
 					CFormatStr::Baluoteliz_MessageBox(L"项目数据为空，或者 所有的数据都已经随机出现过了");
 				}
